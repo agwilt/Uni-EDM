@@ -19,6 +19,7 @@ bool graph_is_eulerian(struct graph *G)
 	}
 }
 
+/*
 // idea: copy old graph over to new one, thereby saving the whole thing
 struct link *graph_euler_cycle(struct graph *G)
 {
@@ -30,22 +31,50 @@ struct link *graph_euler_cycle(struct graph *G)
 
 	start = current = first = path_prepend_link(x, NULL);
 
-gotos_are_Fun:
+	for (start = current; start != NULL;) {
+		x = current->id;
 
+		while (G->nodes[x].num_n > 0) {
+			graph_remove_edge(G, x, 0);
+			x = G->nodes[x].neighbours[0].id; // x is dead. Long live the new x!
+			current = path_add_link(x, current); // new x will forever go down in the annals of history!
+		}
+
+		// find new place to start
+		current = start;
+		while (current != NULL && G->nodes[current->id].num_n == 0) {
+			current = current->next;
+		}
+		start = current;
+	}
+
+	return first;
+}
+*/
+
+// last != NULL: append list *last to output
+struct link *graph_euler_cycle(struct graph *G, struct link *path)
+{
+	printf("I was called!\n");
+	struct link *current = path;
+	struct link *last=path->next;
+	node_id x = path->id;
 	while (G->nodes[x].num_n > 0) {
-		node_remove_edge(G->nodes+x, 0);
-		x = G->nodes[x].neighbours[0].id; // x is dead. Long live the new x!
-		current = path_add_link(x, current); // new x will forever go down in the annals of history!
+		x = graph_remove_edge(G, x, 0); // remove edge (x,y), update x to y
+		current = path_add_link(x, current); // and add new x to path
 	}
 
-	// find new place to start
-	current = start;
-	while (G->nodes[current->id].num_n == 0) {
-		current = current->next;
-		if (current == NULL) return first;
-	}
-	x = current->id;
-	start = current;
 
-	goto gotos_are_Fun;
+	current = path;
+	struct link *next;
+	while (current->next !=NULL) {
+		printf("Extra round!\n");
+		next = current->next;
+		current->next = graph_euler_cycle(G, current);
+		current = next;
+	}
+
+	current->next = last;
+	printf("Bye!\n");
+	return path;
 }

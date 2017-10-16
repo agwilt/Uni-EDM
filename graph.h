@@ -32,6 +32,7 @@ struct graph {
 void node_add_neighbour(struct node *x, node_id y, double weight);
 // removes a neighbour from x->neighbours, and moves the last one to its place.
 node_id node_remove_edge(struct node *x, node_id offset); // WARNING: moves around edges
+node_id graph_remove_edge(struct graph *G, node_id x, node_id offset);
 
 struct graph graph_from_file(char const *filename, bool is_directed);
 // free all the nodes' RAM, as well as G->nodes

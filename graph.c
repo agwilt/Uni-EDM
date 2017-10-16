@@ -41,6 +41,14 @@ node_id node_remove_edge(struct node *x, node_id offset) // n: offset in array o
 	return y;
 }
 
+node_id graph_remove_edge(struct graph *G, node_id x, node_id offset)
+{
+	node_id y = node_remove_edge(G->nodes+x, offset);
+	if (! G->is_directed)
+		node_remove_edge(G->nodes+y, offset);
+	return y;
+}
+
 void node_add_neighbour(struct node *x, node_id y, double weight)
 {
 	if (x->max_n == 0) {
