@@ -26,7 +26,10 @@ struct link *path_add_link(node_id id, struct link *prev)
 void path_print(struct link *first)
 {
 	while (first != NULL) {
-		printf("%ld\n", first->id);
+		if (first->next != NULL)
+			printf("%ld, ", first->id);
+		else
+			printf("%ld\n", first->id);
 		first = first->next;
 	}
 }

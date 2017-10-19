@@ -44,8 +44,11 @@ node_id node_remove_edge(struct node *x, node_id offset) // n: offset in array o
 node_id graph_remove_edge(struct graph *G, node_id x, node_id offset)
 {
 	node_id y = node_remove_edge(G->nodes+x, offset);
-	if (! G->is_directed)
+	if (! G->is_directed) {
+		offset = 0;
+		while (G->nodes[y].neighbours[offset].id != x) ++offset;
 		node_remove_edge(G->nodes+y, offset);
+	}
 	return y;
 }
 
@@ -84,12 +87,18 @@ void graph_print(struct graph *G)
 	}
 
 	printf("with %ld vertices.\n", G->num_nodes);
-	puts("The edges are:");
+	bool no_edges = true;
 	for (node_id i=0; i<(G->num_nodes); ++i) {
 		for (node_id j=0; j<(G->nodes[i].num_n); ++j) {
+			if (no_edges) {
+				puts("The edges are:");
+				no_edges = false;
+			}
 			printf("%c%ld,%ld%c, weight %lf\n", ldelim, i, G->nodes[i].neighbours[j].id, rdelim, G->nodes[i].neighbours[j].weight);
 		}
 	}
+	if (no_edges)
+		puts("There are no edges.");
 }
 
 struct graph graph_from_file(char const *filename, bool is_directed)

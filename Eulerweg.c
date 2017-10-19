@@ -20,8 +20,8 @@ int main(int argc, char *argv[])
 		return 0;
 	} else if (graph_is_eulerian(&G)) {
 		printf("Graph is Eulerian:\n");
-		struct link *v1 = path_prepend_link(0, NULL);
-		struct link *path = graph_euler_cycle(&G, v1);
+		struct link *path = path_prepend_link(0, NULL);
+		graph_euler_cycle(&G, path);
 		path_print(path);
 	} else {
 		printf("Graph is connected but not Eulerian.\n");

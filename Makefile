@@ -1,10 +1,10 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -g -pedantic -O2 -std=c11
+CFLAGS = -Wall -Wextra -g -pedantic -std=c11
 
-TEST = graph_test
+EULERWEG = Eulerweg
 
-$(TEST): $(TEST).c graph.c graph.h path.c path.h euler.c euler.h Makefile
-	$(CC) $(CFLAGS) path.c euler.c graph.c $(TEST).c -o $(TEST)
+$(EULERWEG): $(EULERWEG).c graph.c graph.h path.c path.h euler.c euler.h Makefile
+	$(CC) $(CFLAGS) path.c euler.c graph.c $(EULERWEG).c -o $(EULERWEG)
 
 clean:
-	rm -f $(TEST)
+	rm -f $(EULERWEG)
