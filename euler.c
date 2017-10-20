@@ -60,7 +60,6 @@ struct link *graph_euler_cycle(struct graph *G, struct link *path)
 	if (G->nodes[path->id].num_n == 0) {
 		return path->next;
 	}
-	printf("I was called at %ld\n", path->id);
 
 	struct link *current = path;
 	struct link *last=path->next;
@@ -70,18 +69,11 @@ struct link *graph_euler_cycle(struct graph *G, struct link *path)
 		current = path_add_link(x, current); // and add new x to path
 	}
 
-	printf("First pass. Current path from start:\n");
-	path_print(path);
-
 	current = path;  // first in new loop
 	while (current->next !=NULL) {
-		printf("quick call from %ld, ", current->id);
 		current = graph_euler_cycle(G, current);
-		//printf("now at %ld.\n", current->id);
 	}
 
-	current->next = last;
-	printf("Exiting. Current path from start:\n");
-	path_print(path);
+	//current->next = last;
 	return last;
 }

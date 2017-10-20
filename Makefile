@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -g -pedantic -std=c11
+CFLAGS = -Wall -Wextra -g -Ofast -pedantic -std=c11
 
 EULERWEG = Eulerweg
 
