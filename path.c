@@ -25,6 +25,7 @@ struct link *path_add_link(node_id id, struct link *prev)
 
 void path_print(struct link *first)
 {
+	// this enables full buffering to greatly speed up output with lots of newlines
 	setvbuf(stdout, NULL, _IOFBF, 0);
 	while (first != NULL) {
 		printf("%ld\n", first->id);

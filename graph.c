@@ -27,8 +27,8 @@ node_id graph_add_nodes(struct graph *G, node_id n)
 	while (n --> 0) {
 		G->nodes[G->num_nodes] = (struct node) {
 			.num_n = 0,
-			.max_n = 0,//MAX_NEIGH,
-			.neighbours = NULL};//malloc(MAX_NEIGH*sizeof(struct neighbour)) };
+			.max_n = 0,
+			.neighbours = NULL};
 		G->num_nodes++;
 	}
 	return G->num_nodes-1;

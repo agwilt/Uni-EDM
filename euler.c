@@ -19,39 +19,6 @@ bool graph_is_eulerian(struct graph *G)
 	}
 }
 
-/*
-// idea: copy old graph over to new one, thereby saving the whole thing
-struct link *graph_euler_cycle(struct graph *G)
-{
-	struct link *first;
-	struct link *current;
-	struct link *start;
-
-	node_id x = 0;
-
-	start = current = first = path_prepend_link(x, NULL);
-
-	for (start = current; start != NULL;) {
-		x = current->id;
-
-		while (G->nodes[x].num_n > 0) {
-			graph_remove_edge(G, x, 0);
-			x = G->nodes[x].neighbours[0].id; // x is dead. Long live the new x!
-			current = path_add_link(x, current); // new x will forever go down in the annals of history!
-		}
-
-		// find new place to start
-		current = start;
-		while (current != NULL && G->nodes[current->id].num_n == 0) {
-			current = current->next;
-		}
-		start = current;
-	}
-
-	return first;
-}
-*/
-
 // path: first link, path->next: end of new path
 // return: original path->next
 struct link *graph_euler_cycle(struct graph *G, struct link *path)

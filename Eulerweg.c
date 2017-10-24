@@ -16,7 +16,6 @@ int main(int argc, char *argv[])
 		printf("Graph is disconnected, with %d components. Also not very Eulerian.\n", zus_komp);
 		return 0;
 	} else if (graph_is_eulerian(&G)) {
-		//printf("Graph is Eulerian:\n");
 		struct link *path = path_prepend_link(0, NULL);
 		graph_euler_cycle(&G, path);
 		path_print(path);
