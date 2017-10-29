@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "path.h"
 
-struct link *path_prepend_link(node_id id, struct link *first)
+struct link *path_prepend_link(int id, struct link *first)
 {
 	struct link *new_link = malloc(sizeof(struct link));
 	new_link->id = id;
@@ -10,7 +10,7 @@ struct link *path_prepend_link(node_id id, struct link *first)
 	return new_link;
 }
 
-struct link *path_add_link(node_id id, struct link *prev)
+struct link *path_add_link(int id, struct link *prev)
 {
 	struct link *new_link = malloc(sizeof(struct link));
 	new_link->id = id;
@@ -28,7 +28,7 @@ void path_print(struct link *first)
 	// this enables full buffering to greatly speed up output with lots of newlines
 	setvbuf(stdout, NULL, _IOFBF, 0);
 	while (first != NULL) {
-		printf("%ld\n", first->id);
+		printf("%d\n", first->id);
 		first = first->next;
 	}
 }

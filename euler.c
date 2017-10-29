@@ -30,7 +30,7 @@ struct link *graph_euler_cycle(struct graph *G, struct link *path)
 
 	struct link *current = path;
 	struct link *last=path->next;
-	node_id x = path->id;
+	int x = path->id;
 	while (G->nodes[x].num_n > 0) {
 		x = graph_remove_edge(G, x, 0); // remove edge (x,y), update x to y
 		current = path_add_link(x, current); // and add new x to path

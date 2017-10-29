@@ -2,16 +2,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-long fast_atol(char **str)
+// function for generating graph from file
+static int fast_atoi(char **str);
+
+// adds (directed) neighbour to node, doubles max_n if necessary
+static void node_add_neighbour(struct node *x, int y, double weight);
+// removes a neighbour from x->neighbours, and moves the last one to its place.
+static int node_remove_edge(struct node *x, int offset); // WARNING: moves around edges
+
+int fast_atoi(char **str)
 {
-	long val = 0;
+	int val = 0;
 	while ( !(**str == ' ' || **str == '\n' || **str == '\0')) {
 		val = val*10 + (*(*str)++ - '0');
 	}
 	return val;
 }
 
-node_id graph_add_nodes(struct graph *G, node_id n)
+int graph_add_nodes(struct graph *G, int n)
 {
 	if (n <= 0) return -1;
 	if (G->max_nodes == 0) {
@@ -34,16 +42,16 @@ node_id graph_add_nodes(struct graph *G, node_id n)
 	return G->num_nodes-1;
 }
 
-node_id node_remove_edge(struct node *x, node_id offset) // n: offset in array of neighbours
+int node_remove_edge(struct node *x, int offset) // n: offset in array of neighbours
 {
-	node_id y = x->neighbours[offset].id;
+	int y = x->neighbours[offset].id;
 	x->neighbours[offset] = x->neighbours[--(x->num_n)];
 	return y;
 }
 
-node_id graph_remove_edge(struct graph *G, node_id x, node_id offset)
+int graph_remove_edge(struct graph *G, int x, int offset)
 {
-	node_id y = node_remove_edge(G->nodes+x, offset);
+	int y = node_remove_edge(G->nodes+x, offset);
 	if (! G->is_directed) {
 		offset = 0;
 		while (G->nodes[y].neighbours[offset].id != x) ++offset;
@@ -52,7 +60,7 @@ node_id graph_remove_edge(struct graph *G, node_id x, node_id offset)
 	return y;
 }
 
-void node_add_neighbour(struct node *x, node_id y, double weight)
+void node_add_neighbour(struct node *x, int y, double weight)
 {
 	if (x->max_n == 0) {
 		x->neighbours = malloc(MAX_NEIGH*sizeof(struct neighbour));
@@ -64,7 +72,7 @@ void node_add_neighbour(struct node *x, node_id y, double weight)
 	x->neighbours[x->num_n++] = (struct neighbour) {.weight=weight, .id=y};
 }
 
-void graph_add_edge(struct graph *G, node_id start, node_id end, double weight)
+void graph_add_edge(struct graph *G, int start, int end, double weight)
 {
 	node_add_neighbour(G->nodes+start, end, weight);
 
@@ -86,15 +94,15 @@ void graph_print(struct graph *G)
 		rdelim = '}';
 	}
 
-	printf("with %ld vertices.\n", G->num_nodes);
+	printf("with %d vertices.\n", G->num_nodes);
 	bool no_edges = true;
-	for (node_id i=0; i<(G->num_nodes); ++i) {
-		for (node_id j=0; j<(G->nodes[i].num_n); ++j) {
+	for (int i=0; i<(G->num_nodes); ++i) {
+		for (int j=0; j<(G->nodes[i].num_n); ++j) {
 			if (no_edges) {
 				puts("The edges are:");
 				no_edges = false;
 			}
-			printf("%c%ld,%ld%c, weight %lf\n", ldelim, i, G->nodes[i].neighbours[j].id, rdelim, G->nodes[i].neighbours[j].weight);
+			printf("%c%d,%d%c, weight %lf\n", ldelim, i, G->nodes[i].neighbours[j].id, rdelim, G->nodes[i].neighbours[j].weight);
 		}
 	}
 	if (no_edges)
@@ -104,8 +112,8 @@ void graph_print(struct graph *G)
 struct graph graph_from_file(char const *filename, bool is_directed)
 {
 	FILE *fp = fopen(filename, "r");
-	node_id num = 0; // number of vertices
-	node_id head, tail;
+	int num = 0; // number of vertices
+	int head, tail;
 
 	char *line = NULL; // line from getline
 	char *p; // for parsing line
@@ -118,7 +126,7 @@ struct graph graph_from_file(char const *filename, bool is_directed)
 	}
 
 	// Get number of vertices
-	if (fscanf(fp, "%ld\n", &num) != 1) {
+	if (fscanf(fp, "%d\n", &num) != 1) {
 		fprintf(stderr, "Error: invalid file format.\n");
 		goto error;
 	}
@@ -127,12 +135,12 @@ struct graph graph_from_file(char const *filename, bool is_directed)
 
 	// Get edges
 	while (getline(&line, &len, fp) != -1) {
-		// format: %ld %ld [%lf]
+		// format: %d %d [%lf]
 		p = line;
 
-		head = fast_atol(&p);
+		head = fast_atoi(&p);
 		++p;
-		tail = fast_atol(&p);
+		tail = fast_atoi(&p);
 
 		weight = 1.0;
 		/*
@@ -173,13 +181,13 @@ int graph_zus_komp(struct graph *G)
 		exit(1);
 	}
 	// current root to DFS from
-	node_id cur_node, neighbour_id;
-	node_id r = 0;
+	int cur_node, neighbour_id;
+	int r = 0;
 	int components = 0;
 	char *visited = calloc(G->num_nodes, 1);
 	// not nice:
-	node_id *unexplored = malloc(G->num_nodes * sizeof(node_id));
-	node_id *sp = unexplored; // points to highest element in stack, empty if unexplored-1
+	int *unexplored = malloc(G->num_nodes * sizeof(int));
+	int *sp = unexplored; // points to highest element in stack, empty if unexplored-1
 
 	while (r < G->num_nodes) {
 		++components;
@@ -188,7 +196,7 @@ int graph_zus_komp(struct graph *G)
 
 		while (sp > unexplored) {
 			cur_node = *(--sp);
-			for (node_id i=0; i<(G->nodes[cur_node].num_n); ++i) {
+			for (int i=0; i<(G->nodes[cur_node].num_n); ++i) {
 				neighbour_id = G->nodes[cur_node].neighbours[i].id;
 				if (! visited[neighbour_id]) {
 					visited[neighbour_id] = 1;
@@ -201,5 +209,27 @@ int graph_zus_komp(struct graph *G)
 		while ((r < G->num_nodes) && visited[r]) ++r;
 	}
 
+	free(visited);
+	free(unexplored);
+
 	return components;
 }
+
+/*
+void graph_mst(struct graph *G)
+{
+	if (G->is_directed) {
+		fprintf(stderr, "Error counting ZusKomp: graph is directed!\n");
+		exit(1);
+	}
+	int r = 0;
+	//char *visited = calloc(G->num_nodes, 1);
+	struct fib_heap heap = {.n = 0, .max = 0, .elements=NULL};
+
+	// go looking
+	//visited[r] = true;
+	fib_heap_insert(&heap, value, 0);
+
+	while (heap->n > 0)
+}
+*/
