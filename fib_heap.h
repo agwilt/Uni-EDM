@@ -9,8 +9,7 @@
  */
 
 struct fib_heap {
-	int n;		// number of elements (i.e. elements up to (n-1) are valid)
-	int max;	// space (i.e. last element possible is (max-1)
+	int n;		// how long is b (max element is n-1)
 	struct fib_node **b; // array of pointers to fib_nodes
 };
 
@@ -30,5 +29,9 @@ extern struct fib_node *fib_heap_insert(struct fib_heap *heap, void *value, doub
 extern struct fib_node *fib_heap_extract_min(struct fib_heap *heap);
 
 extern void fib_heap_decrease_key(struct fib_heap *heap, struct fib_node *v, double key);
+
+// DEBUG STUFF
+void print_node(struct fib_node *v);
+void print_heap(struct fib_heap *heap);
 
 #endif

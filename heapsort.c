@@ -3,7 +3,7 @@
 
 int main()
 {
-	struct fib_heap heap = {.n = 0, .max = 0, .b = NULL};
+	struct fib_heap heap = {.n = 0, .b = NULL};
 
 	int i;
 	int n = 0;
