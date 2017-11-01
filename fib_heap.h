@@ -31,7 +31,6 @@ extern struct fib_node *fib_heap_extract_min(struct fib_heap *heap);
 extern void fib_heap_decrease_key(struct fib_heap *heap, struct fib_node *v, double key);
 
 // DEBUG STUFF
-void print_node(struct fib_node *v);
-void print_heap(struct fib_heap *heap);
+extern void fib_print_heap(struct fib_heap *heap);
 
 #endif

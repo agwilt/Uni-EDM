@@ -10,5 +10,8 @@ $(EULERWEG): $(EULERWEG).c graph.c graph.h path.c path.h euler.c euler.h Makefil
 heapsort: heapsort.c fib_heap.h fib_heap.c Makefile
 	$(CC) $(CFLAGS) fib_heap.c heapsort.c -o heapsort
 
+heap_test: heap_test.c fib_heap.h fib_heap.c Makefile
+	$(CC) $(CFLAGS) fib_heap.c heap_test.c -o heap_test
+
 clean:
-	rm -f $(EULERWEG) heapsort
+	rm -f $(EULERWEG) heapsort heap_test
