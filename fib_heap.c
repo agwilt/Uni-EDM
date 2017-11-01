@@ -80,10 +80,15 @@ extern struct fib_node *fib_heap_extract_min(struct fib_heap *heap)
 extern void fib_heap_decrease_key(struct fib_heap *heap, struct fib_node *v, double key)
 {
 	v->key = key;
+	// in case v is a root: just exit quickly
+	if (v->parent == NULL)
+		return;
+
+
 	// first, find longest path
 	struct fib_node *r = v->parent;
 	while (r->parent != NULL && r->phi == 1) r = r->parent;
-	// r is now root of path where all inner vertices z have phi(z) = 1
+	// r!=v is now root of path where all inner vertices z have phi(z) = 1
 
 	struct fib_node *parent;
 	v->phi = 1-v->phi; // so that v->phi isn't switched
