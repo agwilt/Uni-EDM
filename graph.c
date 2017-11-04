@@ -1,6 +1,10 @@
-#include "graph.h"
+#define _GNU_SOURCE
+
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "graph.h"
+#include "fib_heap.h"
 
 // function for generating graph from file
 static int fast_atoi(char **str);
@@ -215,21 +219,67 @@ int graph_zus_komp(struct graph *G)
 	return components;
 }
 
-/*
-void graph_mst(struct graph *G)
+
+// prints list of edges to stdout
+int graph_mst(struct graph *G)
 {
 	if (G->is_directed) {
-		fprintf(stderr, "Error counting ZusKomp: graph is directed!\n");
+		fprintf(stderr, "Error counting connected components: graph is directed!\n");
 		exit(1);
 	}
+	// current root to MST from
 	int r = 0;
-	//char *visited = calloc(G->num_nodes, 1);
-	struct fib_heap heap = {.n = 0, .max = 0, .elements=NULL};
+	int components = 0;
+	short *visited = calloc(G->num_nodes, 1);
 
-	// go looking
-	//visited[r] = true;
-	fib_heap_insert(&heap, value, 0);
+	struct edge {
+		int from;
+		int to;
+	};
 
-	while (heap->n > 0)
+	struct fib_heap heap = {.n = 0, .b = NULL};
+	// f_nodes[i] is the address of the fib_node corresponding to i (or null)
+	struct fib_node **f_nodes = calloc(G->num_nodes, sizeof(struct fib_node **));
+	struct edge *edges = malloc(G->num_nodes * sizeof(struct edge));
+
+	while (r < G->num_nodes) {
+		++components;
+		// push r
+		visited[r] = true;
+
+		int v_id = r;
+		struct node *v;
+
+		// go through neighbours
+		while (1) {
+			v = G->nodes+v_id;
+			for (int n = 0; n < v->num_n; ++n) {
+				int n_id = v->neighbours[n].id;
+				// skip if already visited
+				if (visited[n_id]) continue;
+
+				if (f_nodes[n_id] == NULL) {
+					f_nodes[n_id] = fib_heap_insert(&heap, (void *) (edges+n_id), v->neighbours[n].weight);
+					edges[n_id] = (struct edge) {.from = v_id, .to = n_id};
+				} else if (v->neighbours[n].weight < f_nodes[n_id]->key) {
+					fib_heap_decrease_key(&heap, f_nodes[n_id], v->neighbours[n].weight);
+				}
+			}
+			struct fib_node *f = fib_heap_extract_min(&heap);
+			if (f == NULL) break;  // break if heap empty
+			v_id = ((struct edge *) f->val)->from;
+			printf("%d %d\n", v_id, ((struct edge *) f->val)->to);
+			visited[v_id] = true; 
+			free(f);
+		}
+
+		// find new r
+		while ((r < G->num_nodes) && visited[r]) ++r;
+	}
+
+	free(visited);
+	free(f_nodes);
+	free(edges);
+
+	return components;
 }
-*/
