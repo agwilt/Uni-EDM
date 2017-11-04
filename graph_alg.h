@@ -1,4 +1,4 @@
-#define _GNU_SOURCE
+#define _POSIX_C_SOURCE 201112L
 
 #ifndef GRAPH_ALG_H
 #define GRAPH_ALG_H

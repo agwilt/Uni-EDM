@@ -1,5 +1,4 @@
-//#define _POSIX_C_SOURCE = 201112L
-#define _GNU_SOURCE
+#define _POSIX_C_SOURCE 201112L
 
 #include <stdlib.h>
 #include <stdio.h>

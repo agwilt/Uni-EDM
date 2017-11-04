@@ -1,4 +1,4 @@
-#define _GNU_SOURCE
+#define _POSIX_C_SOURCE 201112L
 
 #ifndef FIB_HEAP_H
 #define FIB_HEAP_H
