@@ -47,7 +47,4 @@ void graph_print(struct graph *G);
 // return number of Zshgskomp
 int graph_zus_komp(struct graph *G);
 
-// minimal spanning tree w/ Prim, fibonacci heaps (print edges to stdout)
-int graph_mst(struct graph *G);
-
 #endif

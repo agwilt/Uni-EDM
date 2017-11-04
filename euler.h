@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #ifndef EULER_H
 #define EULER_H
 

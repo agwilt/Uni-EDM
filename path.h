@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #ifndef PATH_H
 #define PATH_H
 

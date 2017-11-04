@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #ifndef FIB_HEAP_H
 #define FIB_HEAP_H
 

@@ -1,13 +1,12 @@
+#define _GNU_SOURCE
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-
-// DEBUG
 #include <stdio.h>
-//#define DEBUG
 
 #include "fib_heap.h"
-
+//#define DEBUG
 
 // private declarations
 static void fib_heap_plant(struct fib_heap *heap, struct fib_node *v);
