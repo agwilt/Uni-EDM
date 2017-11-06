@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #include "graph.h"
 
@@ -147,9 +148,9 @@ struct graph graph_from_file(char const *filename, bool is_directed)
 		tail = fast_atoi(&p);
 
 		// set weight
-		weight = 1.0;
-		if (*p == ' ')
-			weight = strtod(p+1, NULL);
+		if (*p != ' ' || sscanf(p, " %lf\n", &weight) == 0) {
+			weight = 1.0;
+		}
 
 		if (tail != head) {
 			graph_add_edge(&G, head, tail, weight);

@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
 {
 	if (argc<=1) return 1;
 	struct graph G = graph_from_file(argv[1], false);
+	graph_print(&G);
 	printf("%lf\n", graph_mst(&G));
 
 	return 0;

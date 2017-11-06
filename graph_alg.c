@@ -14,6 +14,7 @@ double graph_mst(struct graph *G)
 		exit(1);
 	}
 
+	// save cheap way of getting to .to
 	struct edge {
 		int from;
 		int to;
@@ -31,6 +32,7 @@ double graph_mst(struct graph *G)
 	double total_weight = 0;
 	int v_id = 0;
 	struct node *v;
+	struct fib_node *f;
 
 	// go through neighbours
 	while (1) {
@@ -51,12 +53,13 @@ double graph_mst(struct graph *G)
 		}
 
 		// choose next node
-		struct fib_node *f = fib_heap_extract_min(&heap);
+		f = fib_heap_extract_min(&heap);
 		if (f == NULL) break;  // break if heap empty
-		v_id = ((struct edge *) f->val)->from;
-		printf("%d %d\n", v_id, ((struct edge *) f->val)->to);
+		v_id = ((struct edge *) f->val)->to;
+		printf("%d %d\n", ((struct edge *) f->val)->from, v_id);
 		visited[v_id] = true; 
 		total_weight += f->key;
+		printf("Added weight %lf\n", f->key);
 		free(f);
 	}
 
