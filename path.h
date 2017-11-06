@@ -5,6 +5,8 @@
 
 #include "graph.h"
 
+#include "config.h"
+
 struct link {
 	int id;
 	struct link *next;

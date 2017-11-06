@@ -7,6 +7,8 @@
 #include "euler.h"
 #include "path.h"
 
+#include "config.h"
+
 bool graph_is_eulerian(struct graph *G)
 {
 	if (G->is_directed) {

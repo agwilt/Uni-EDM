@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include "fib_heap.h"
 
+#include "config.h"
+
 int main()
 {
 	struct fib_heap heap = {.n = 0, .b = NULL};
@@ -20,6 +22,7 @@ int main()
 				printf("h .. Help\nq .. Quit\ne .. Extract Min\ni key .. Insert\np .. Print\nd address key .. Decrease Key\n");
 				break;
 			case 'q':
+			case '\0':
 				return 0;
 			case 'e':
 				v = fib_heap_extract_min(&heap);
@@ -35,6 +38,8 @@ int main()
 			case 'd':
 				sscanf(input+2, "%p %lf", (void **) &v, &key);
 				fib_heap_decrease_key(&heap, v, key);
+				break;
+			case '\n':
 				break;
 			default:
 				printf("Error: Command not found.\n");

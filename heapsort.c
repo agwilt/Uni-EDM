@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include "fib_heap.h"
 
+#include "config.h"
+
 int main()
 {
 	struct fib_heap heap = {.n = 0, .b = NULL};

@@ -6,6 +6,8 @@
 #include "graph_alg.h"
 #include "fib_heap.h"
 
+#include "config.h"
+
 // prints list of edges to stdout
 double graph_mst(struct graph *G)
 {
@@ -26,43 +28,52 @@ double graph_mst(struct graph *G)
 	char *visited = calloc(G->num_nodes, 1);
 	// f_nodes[i] is the address of the fib_node corresponding to i (or null)
 	struct fib_node **f_nodes = calloc(G->num_nodes, sizeof(struct fib_node **));
-	// just to store both ends of edge
+	// just to store both ends of edge. edges[w] is the edge {v,w} that could connact w to the tree
 	struct edge *edges = malloc(G->num_nodes * sizeof(struct edge));
 
 	double total_weight = 0;
-	int v_id = 0;
-	struct node *v;
+	struct node *v; // pointer to current node
 	struct fib_node *f;
+
+	int v_id = 0;	// id of current node
+	visited[0] = true;
 
 	// go through neighbours
 	while (1) {
 
 		// look at current node
 		v = G->nodes+v_id;
+
 		for (int n = 0; n < v->num_n; ++n) {
 			int n_id = v->neighbours[n].id;
-			// skip if already visited
-			if (visited[n_id]) continue;
-
-			if (f_nodes[n_id] == NULL) {
-				f_nodes[n_id] = fib_heap_insert(&heap, (void *) (edges+n_id), v->neighbours[n].weight);
-				edges[n_id] = (struct edge) {.from = v_id, .to = n_id};
-			} else if (v->neighbours[n].weight < f_nodes[n_id]->key) {
-				fib_heap_decrease_key(&heap, f_nodes[n_id], v->neighbours[n].weight);
+			// if neighbour is unvisited (not already in tree), see if edge is interesting
+			if (! visited[n_id]) {
+				if (f_nodes[n_id] == NULL) {						// if not already in heap
+					f_nodes[n_id] = fib_heap_insert(&heap, (void *) (edges+n_id), v->neighbours[n].weight);
+				} else if (v->neighbours[n].weight < f_nodes[n_id]->key) {		// else update if needed
+					fib_heap_decrease_key(&heap, f_nodes[n_id], v->neighbours[n].weight);
+				}
+				edges[n_id] = (struct edge) {.from = v_id, .to = n_id};			// remember how we got to n_id
 			}
 		}
 
+		visited[v_id] = true; 
+
 		// choose next node
 		f = fib_heap_extract_min(&heap);
+#ifdef DEBUG
+		printf("Extracted %p from heap.\n", (void *) f);
+#endif
 		if (f == NULL) break;  // break if heap empty
+
 		v_id = ((struct edge *) f->val)->to;
 		printf("%d %d\n", ((struct edge *) f->val)->from, v_id);
-		visited[v_id] = true; 
 		total_weight += f->key;
-		printf("Added weight %lf\n", f->key);
+		// we can now free f, since visited[v_id] will be true after next round --> fib_node[v_id] won't be accessed
 		free(f);
 	}
 
+	fib_heap_free(&heap);
 	free(visited);
 	free(f_nodes);
 	free(edges);

@@ -5,6 +5,8 @@
 
 #include "graph.h"
 
+#include "config.h"
+
 /* DATA STRUCTURES
  *
  * store roots in array, double length when necessary
@@ -24,6 +26,7 @@ struct fib_node {
 	struct fib_node *parent;
 	struct fib_node *child;		// "prev-most" child
 	struct fib_node *next;
+	struct fib_node *prev;
 };
 
 extern struct fib_node *fib_heap_insert(struct fib_heap *heap, void *value, double key);
@@ -32,7 +35,8 @@ extern struct fib_node *fib_heap_extract_min(struct fib_heap *heap);
 
 extern void fib_heap_decrease_key(struct fib_heap *heap, struct fib_node *v, double key);
 
-// DEBUG STUFF
 extern void fib_print_heap(struct fib_heap *heap);
+
+extern void fib_heap_free(struct fib_heap *heap);
 
 #endif

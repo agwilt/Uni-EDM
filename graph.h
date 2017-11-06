@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+#include "config.h"
+
 #define MAX_NEIGH 1
 
 struct node {

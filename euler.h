@@ -6,6 +6,8 @@
 #include "graph.h"
 #include <stdbool.h>
 
+#include "config.h"
+
 // check if each node has even number of neighbours
 bool graph_is_eulerian(struct graph *G);
 

@@ -6,6 +6,8 @@
 
 #include "graph.h"
 
+#include "config.h"
+
 // function for generating graph from file
 static int fast_atoi(char **str);
 

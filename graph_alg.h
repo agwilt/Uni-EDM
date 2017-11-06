@@ -5,6 +5,8 @@
 
 #include "graph.h"
 
+#include "config.h"
+
 // minimal spanning tree w/ Prim, fibonacci heaps (print edges to stdout)
 double graph_mst(struct graph *G);
 

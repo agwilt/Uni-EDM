@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include "path.h"
 
+#include "config.h"
+
 struct link *path_prepend_link(int id, struct link *first)
 {
 	struct link *new_link = malloc(sizeof(struct link));
