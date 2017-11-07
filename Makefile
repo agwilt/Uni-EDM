@@ -18,4 +18,4 @@ heap_test: heap_test.c fib_heap.h fib_heap.c Makefile
 	$(CC) $(CFLAGS) fib_heap.c heap_test.c -o bin/heap_test
 
 clean:
-	rm -f $(EULERWEG) heapsort heap_test $(MST)
+	rm -f bin/$(EULERWEG) bin/heapsort bin/heap_test bin/$(MST)

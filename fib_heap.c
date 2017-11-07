@@ -12,6 +12,7 @@
 static void fib_heap_plant(struct fib_heap *heap, struct fib_node *v);
 static void fib_node_add_neighbour(struct fib_node *start, struct fib_node *end);
 static void fib_free_nodes(struct fib_node *v);
+static void fib_deal_with_parents(struct fib_heap *heap, struct fib_node *v, struct fib_node *r);
 
 // functions
 
@@ -85,6 +86,24 @@ extern struct fib_node *fib_heap_extract_min(struct fib_heap *heap)
 	return r;
 }
 
+static void fib_deal_with_parents(struct fib_heap *heap, struct fib_node *v, struct fib_node *r)
+{
+	struct fib_node *parent = v->parent;
+	parent->degree--;
+	if (parent->child == v) parent->child = v->next;
+	else v->prev->next = v->next;
+	if (v->next) v->next->prev = v->prev;
+	v->parent = NULL;
+	v->prev = NULL;
+	v->next = NULL;
+
+	if (parent != r) {
+		fib_deal_with_parents(heap, parent, r);
+	}
+
+	fib_heap_plant(heap, v);
+}
+
 extern void fib_heap_decrease_key(struct fib_heap *heap, struct fib_node *v, double key)
 {
 #ifdef DEBUG
@@ -102,20 +121,24 @@ extern void fib_heap_decrease_key(struct fib_heap *heap, struct fib_node *v, dou
 		return;
 
 
-	// first, find longest path
+	// first, find longest path and switch (phi)s
 	struct fib_node *r = v->parent;
-	while (r->parent != NULL && r->phi == 1) r = r->parent;
+	while (r->parent != NULL && r->phi == 1) {
+		r->phi = 1-v->phi;
+		r = r->parent;
+	}
 	// r!=v is now root of path where all inner vertices z have phi(z) = 1
 	// either phi(r) == 0 or r is root
 
+	fib_deal_with_parents(heap, v, r);
+
+/*
 	struct fib_node *parent;
-	v->phi = 1-v->phi; // so that v->phi isn't switched
 
 	// TODO: merge these two loops if everything works
 
 	while (v != r) {
 		parent = v->parent;
-		v->phi = 1-v->phi;
 		parent->degree--;
 		if (parent->child == v) parent->child = v->next;// if first kid, change first kid
 		else v->prev->next = v->next;			// not first kid, so reorg. first
@@ -128,6 +151,7 @@ extern void fib_heap_decrease_key(struct fib_heap *heap, struct fib_node *v, dou
 
 		v = parent; // go on with parent
 	}
+*/
 
 	// now at root. Only plant if root is in fact a root (else flipping phi fixes everything)
 	r->phi = 1 - r->phi;
@@ -143,6 +167,8 @@ static void fib_heap_plant(struct fib_heap *heap, struct fib_node *v)
 {
 #ifdef DEBUG
 	printf("CALLING: fib_heap_plant(%p, %p)\n", (void *) heap, (void *) v);
+	printf("Pre-plant heap:\n");
+	fib_print_heap(heap);
 #endif
 	// grow b (and set things to NULL) if necessary
 	if (v->degree >= heap->n) {
@@ -156,11 +182,11 @@ static void fib_heap_plant(struct fib_heap *heap, struct fib_node *v)
 	struct fib_node *r = heap->b[v->degree];
 
 	heap->b[v->degree] = NULL; // to avoid having rubbish lying around (old, rusty pointers being very, very dangerous)
-	if (r != NULL && r != v && r->parent == NULL) {
+	//if (r != NULL && r != v && r->parent == NULL) {
+	if (r != NULL && r->degree != v->degree && r != v && r->parent == NULL) {
 #ifdef DEBUG
 		if (r->degree != v->degree) {
 			printf("Wah!\n");
-			exit(1);
 		}
 #endif
 		if (r->key <= v->key) {
