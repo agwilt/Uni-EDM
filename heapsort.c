@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 201112L
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "fib_heap.h"
 
 #include "config.h"
@@ -9,12 +10,23 @@ int main()
 {
 	struct fib_heap heap = {.n = 0, .b = NULL};
 
-	int i;
+	double key;
 	int n = 0;
 
-	while (scanf("%d", &i)) {
-		fib_heap_insert(&heap, NULL, i);
-		++n;
+	char *line = NULL;
+	size_t len = 0;
+
+	while (getline(&line, &len, stdin)) {
+		if (line[0] == '\0') break;
+		//i = strtod(line, NULL);
+		if (sscanf(line, "%lf", &key)) {
+			fib_heap_insert(&heap, NULL, key);
+			++n;
+		}
+
+		free(line);
+		line = NULL;
+		len = 0;
 	}
 
 	while (n > 0) {
