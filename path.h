@@ -17,5 +17,6 @@ struct link {
 struct link *path_prepend_link(int id, struct link *first);
 struct link *path_add_link(int id, struct link *prev);
 void path_print(struct link *first);
+void path_free(struct link *first);
 
 #endif

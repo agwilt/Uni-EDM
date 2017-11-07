@@ -23,9 +23,12 @@ int main(int argc, char *argv[])
 		struct link *path = path_prepend_link(0, NULL);
 		graph_euler_cycle(&G, path);
 		path_print(path);
+		path_free(path);
 	} else {
 		printf("Graph is connected but not Eulerian.\n");
 	}
+
+	graph_free(&G);
 
 	return 0;
 }

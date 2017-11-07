@@ -36,3 +36,14 @@ void path_print(struct link *first)
 		first = first->next;
 	}
 }
+
+void path_free(struct link *first)
+{
+	// this enables full buffering to greatly speed up output with lots of newlines
+	struct link *next;
+	while (first != NULL) {
+		next = first->next;
+		free(first);
+		first = next;
+	}
+}
