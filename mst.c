@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 //	printf("%lf\n", graph_mst(&G));
 	graph_mst(&G);
 
-//	graph_free(&G);
+	graph_free(&G);
 
 	return 0;
 }
