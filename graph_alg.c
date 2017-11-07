@@ -38,6 +38,8 @@ double graph_mst(struct graph *G)
 	int v_id = 0;	// id of current node
 	visited[0] = true;
 
+	setvbuf(stdout, NULL, _IOFBF, 0);
+
 	// go through neighbours
 	while (1) {
 

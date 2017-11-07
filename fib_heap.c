@@ -8,20 +8,15 @@
 #include "fib_heap.h"
 #include "config.h"
 
-// private declarations
 static void fib_heap_plant(struct fib_heap *heap, struct fib_node *v);
 static void fib_node_add_neighbour(struct fib_node *start, struct fib_node *end);
 static void fib_free_nodes(struct fib_node *v);
 static void fib_deal_with_parents(struct fib_heap *heap, struct fib_node *v, struct fib_node *r);
 
-// functions
 
 
 extern struct fib_node *fib_heap_insert(struct fib_heap *heap, void *val, double key)
 {
-#ifdef DEBUG
-	printf("CALLING: fib_heap_insert(%p, %p, %lf)\n", (void *) heap, val, key);
-#endif
 	struct fib_node *node = malloc(sizeof(struct fib_node));
 	node->key = key;
 	node->val = val;
@@ -34,21 +29,12 @@ extern struct fib_node *fib_heap_insert(struct fib_heap *heap, void *val, double
 
 	fib_heap_plant(heap, node);
 
-#ifdef DEBUG
-//	printf("fib_heap_insert(%p, %p, %lf):\n", (void *) heap, (void *) val, key);
-//	fib_print_heap(heap);
-	printf("Added node with key %lf at point %p\n", key, (void *) node);
-#endif
-
 	return node;
 }
 
 // WARNING: returns NULL if no node found, will break if b has garbage
 extern struct fib_node *fib_heap_extract_min(struct fib_heap *heap)
 {
-#ifdef DEBUG
-	printf("CALLING: fib_heap_extract_min(%p)\n", (void *) heap);
-#endif
 	struct fib_node *r = NULL;
 	double key = INFINITY;
 	for (int i = 0; i<heap->n; ++i) {
@@ -58,12 +44,9 @@ extern struct fib_node *fib_heap_extract_min(struct fib_heap *heap)
 			key = heap->b[i]->key;
 		}
 	}
-#ifdef DEBUG
-	if (r == NULL) printf("Warning: fib_heap_extract_min(%p) returned NULL\n", (void *) heap);
-#endif
 
-	// deal with kids
 	if (r == NULL) return r;
+	// now deal with kids
 
 	// remove from b FIRST, to avoid interference with kids
 	heap->b[r->degree] = NULL;
@@ -77,11 +60,6 @@ extern struct fib_node *fib_heap_extract_min(struct fib_heap *heap)
 		child->prev = NULL;
 		fib_heap_plant(heap, child);
 	}
-
-#ifdef DEBUG
-	printf("fib_heap_extract_min(%p):\n", (void *) heap);
-//	fib_print_heap(heap);
-#endif
 
 	return r;
 }
@@ -113,9 +91,6 @@ static void fib_deal_with_parents(struct fib_heap *heap, struct fib_node *v, str
 
 extern void fib_heap_decrease_key(struct fib_heap *heap, struct fib_node *v, double key)
 {
-#ifdef DEBUG
-	printf("CALLING: fib_heap_decrease_key(%p, %p, %lf)\n", (void *) heap, (void *) v, key);
-#endif
 	if (v->key <= key) {
 		fprintf(stderr, "Error: silly decrease key %lf → %lf\n", v->key, key);
 		exit(1);
@@ -123,7 +98,6 @@ extern void fib_heap_decrease_key(struct fib_heap *heap, struct fib_node *v, dou
 
 	v->key = key;
 	// in case v is a root or no reorganisation needed: just exit quickly
-	//if (v->parent == NULL || v->parent->key <= key)
 	if (v->parent == NULL)
 		return;
 
@@ -139,32 +113,6 @@ extern void fib_heap_decrease_key(struct fib_heap *heap, struct fib_node *v, dou
 
 	fib_deal_with_parents(heap, v, r);
 
-/*
-	struct fib_node *parent;
-
-	while (v != r) {
-		parent = v->parent;
-		parent->degree--;
-		if (parent->child == v) parent->child = v->next;// if first kid, change first kid
-		else v->prev->next = v->next;			// not first kid, so reorg. first
-		if (v->next) v->next->prev = v->prev;		// if not last, deal with that
-		v->parent = NULL;
-		v->next = NULL;
-		v->prev = NULL;
-
-		fib_heap_plant(heap, v);
-
-		v = parent; // go on with parent
-	}
-*/
-
-	// now at root. Only plant if root is in fact a root (else flipping phi fixes everything)
-/*
-	r->phi = 1 - r->phi;
-	if (r->parent == NULL)
-		fib_heap_plant(heap, r);
-*/
-
 	return;
 }
 
@@ -172,11 +120,6 @@ extern void fib_heap_decrease_key(struct fib_heap *heap, struct fib_node *v, dou
 
 static void fib_heap_plant(struct fib_heap *heap, struct fib_node *v)
 {
-#ifdef DEBUG
-	printf("CALLING: fib_heap_plant(%p, %p)\n", (void *) heap, (void *) v);
-//	printf("Pre-plant heap:\n");
-//	fib_print_heap(heap);
-#endif
 	// detach v, just in case
 	v->parent = NULL;
 	v->next = NULL;
@@ -194,12 +137,6 @@ static void fib_heap_plant(struct fib_heap *heap, struct fib_node *v)
 
 	heap->b[v->degree] = NULL; // to avoid having rubbish lying around (old, rusty pointers being very, very dangerous)
 	if (r != NULL && r != v && r->parent == NULL) {
-	//if (r != NULL && r->degree == v->degree && r != v && r->parent == NULL) {
-#ifdef DEBUG
-		if (r->degree != v->degree) {
-			printf("Wah!\n");
-		}
-#endif
 		if (r->key <= v->key) {
 			fib_node_add_neighbour(r, v);
 			fib_heap_plant(heap, r);
@@ -208,11 +145,6 @@ static void fib_heap_plant(struct fib_heap *heap, struct fib_node *v)
 			fib_heap_plant(heap, v);
 		}
 	} else {
-#ifdef DEBUG
-		if (r == v) {
-			printf("Wah! Silly plant!\n");
-		}
-#endif
 		heap->b[v->degree] = v;
 	}
 
@@ -221,17 +153,6 @@ static void fib_heap_plant(struct fib_heap *heap, struct fib_node *v)
 
 static void fib_node_add_neighbour(struct fib_node *start, struct fib_node *end)
 {
-#ifdef DEBUG
-	printf("CALLING: fib_node_add_neighbour(%p, %p)\n", (void *) start, (void *) end);
-	if (end->parent != NULL) {
-		fprintf(stderr, "Error: You no longer have an arborescence.\n");
-		exit(1);
-	}
-	if (start == end) {
-		fprintf(stderr, "Error: Loops not allowed.\n");
-		exit(1);
-	}
-#endif
 	start->degree++;
 	end->parent = start;
 	end->next = start->child;
