@@ -63,11 +63,14 @@ double graph_mst(struct graph *G)
 		f = fib_heap_extract_min(&heap);
 #ifdef DEBUG
 		printf("Extracted %p from heap.\n", (void *) f);
+		printf("Heap now looks like:\n");
+		fib_print_heap(&heap);
 #endif
 		if (f == NULL) break;  // break if heap empty
 
 		v_id = ((struct edge *) f->val)->to;
 		printf("%d %d\n", ((struct edge *) f->val)->from, v_id);
+
 		total_weight += f->key;
 		// we can now free f, since visited[v_id] will be true after next round --> fib_node[v_id] won't be accessed
 		free(f);

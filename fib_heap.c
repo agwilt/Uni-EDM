@@ -27,16 +27,16 @@ extern struct fib_node *fib_heap_insert(struct fib_heap *heap, void *val, double
 	node->val = val;
 	node->phi = 0;
 	node->degree = 0;
-	node->parent = NULL;
 	node->child = NULL;
+	node->parent = NULL;
 	node->next = NULL;
 	node->prev = NULL;
 
 	fib_heap_plant(heap, node);
 
 #ifdef DEBUG
-	printf("fib_heap_insert(%p, %p, %lf):\n", (void *) heap, (void *) val, key);
-	fib_print_heap(heap);
+//	printf("fib_heap_insert(%p, %p, %lf):\n", (void *) heap, (void *) val, key);
+//	fib_print_heap(heap);
 	printf("Added node with key %lf at point %p\n", key, (void *) node);
 #endif
 
@@ -80,14 +80,23 @@ extern struct fib_node *fib_heap_extract_min(struct fib_heap *heap)
 
 #ifdef DEBUG
 	printf("fib_heap_extract_min(%p):\n", (void *) heap);
-	fib_print_heap(heap);
+//	fib_print_heap(heap);
 #endif
 
 	return r;
 }
 
+// with this recursion, the entire path is detached before any planting happens, which hopefully keeps the heap clean ... 
 static void fib_deal_with_parents(struct fib_heap *heap, struct fib_node *v, struct fib_node *r)
 {
+	if (v == r) {
+		v->phi = 1 - v->phi;
+		if (v->parent == NULL) {
+			heap->b[v->degree+1] = NULL; // v doesn't belong here anymore
+			fib_heap_plant(heap, v);
+		}
+		return;
+	}
 	struct fib_node *parent = v->parent;
 	parent->degree--;
 	if (parent->child == v) parent->child = v->next;
@@ -97,9 +106,7 @@ static void fib_deal_with_parents(struct fib_heap *heap, struct fib_node *v, str
 	v->prev = NULL;
 	v->next = NULL;
 
-	if (parent != r) {
-		fib_deal_with_parents(heap, parent, r);
-	}
+	fib_deal_with_parents(heap, parent, r);
 
 	fib_heap_plant(heap, v);
 }
@@ -135,8 +142,6 @@ extern void fib_heap_decrease_key(struct fib_heap *heap, struct fib_node *v, dou
 /*
 	struct fib_node *parent;
 
-	// TODO: merge these two loops if everything works
-
 	while (v != r) {
 		parent = v->parent;
 		parent->degree--;
@@ -154,9 +159,11 @@ extern void fib_heap_decrease_key(struct fib_heap *heap, struct fib_node *v, dou
 */
 
 	// now at root. Only plant if root is in fact a root (else flipping phi fixes everything)
+/*
 	r->phi = 1 - r->phi;
 	if (r->parent == NULL)
 		fib_heap_plant(heap, r);
+*/
 
 	return;
 }
@@ -167,9 +174,14 @@ static void fib_heap_plant(struct fib_heap *heap, struct fib_node *v)
 {
 #ifdef DEBUG
 	printf("CALLING: fib_heap_plant(%p, %p)\n", (void *) heap, (void *) v);
-	printf("Pre-plant heap:\n");
-	fib_print_heap(heap);
+//	printf("Pre-plant heap:\n");
+//	fib_print_heap(heap);
 #endif
+	// detach v, just in case
+	v->parent = NULL;
+	v->next = NULL;
+	v->prev = NULL;
+
 	// grow b (and set things to NULL) if necessary
 	if (v->degree >= heap->n) {
 		heap->b = realloc(heap->b, (v->degree+1) * sizeof(struct fib_node*));
@@ -178,12 +190,11 @@ static void fib_heap_plant(struct fib_heap *heap, struct fib_node *v)
 			heap->b[heap->n] = NULL;
 		}
 	}
-
 	struct fib_node *r = heap->b[v->degree];
 
 	heap->b[v->degree] = NULL; // to avoid having rubbish lying around (old, rusty pointers being very, very dangerous)
-	//if (r != NULL && r != v && r->parent == NULL) {
-	if (r != NULL && r->degree != v->degree && r != v && r->parent == NULL) {
+	if (r != NULL && r != v && r->parent == NULL) {
+	//if (r != NULL && r->degree == v->degree && r != v && r->parent == NULL) {
 #ifdef DEBUG
 		if (r->degree != v->degree) {
 			printf("Wah!\n");
@@ -197,6 +208,11 @@ static void fib_heap_plant(struct fib_heap *heap, struct fib_node *v)
 			fib_heap_plant(heap, v);
 		}
 	} else {
+#ifdef DEBUG
+		if (r == v) {
+			printf("Wah! Silly plant!\n");
+		}
+#endif
 		heap->b[v->degree] = v;
 	}
 
