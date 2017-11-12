@@ -52,10 +52,11 @@ double graph_mst(struct graph *G)
 			if (! visited[n_id]) {
 				if (f_nodes[n_id] == NULL) {						// if not already in heap
 					f_nodes[n_id] = fib_heap_insert(&heap, (void *) (edges+n_id), v->neighbours[n].weight);
+					edges[n_id] = (struct edge) {.from = v_id, .to = n_id};			// remember how we got to n_id
 				} else if (v->neighbours[n].weight < f_nodes[n_id]->key) {		// else update if needed
 					fib_heap_decrease_key(&heap, f_nodes[n_id], v->neighbours[n].weight);
+					edges[n_id] = (struct edge) {.from = v_id, .to = n_id};			// remember how we got to n_id
 				}
-				edges[n_id] = (struct edge) {.from = v_id, .to = n_id};			// remember how we got to n_id
 			}
 		}
 
@@ -67,6 +68,10 @@ double graph_mst(struct graph *G)
 		printf("Extracted %p from heap.\n", (void *) f);
 		printf("Heap now looks like:\n");
 		fib_print_heap(&heap);
+		printf("Edges:\n");
+		for (int i= 0; i<G->num_nodes; ++i) {
+			printf("%d connected via %d\n", edges[i].to, edges[i].from);
+		}
 #endif
 		if (f == NULL) break;  // break if heap empty
 
