@@ -136,7 +136,7 @@ struct graph graph_from_file(char const *filename, bool is_directed)
 		fprintf(stderr, "Error: invalid file format.\n");
 		goto error;
 	}
-	struct graph G = {.num_nodes = 0, .max_nodes = 0, .is_directed=is_directed};
+	struct graph G = {.num_nodes = 0, .max_nodes = 0, .nodes=NULL, .is_directed=is_directed};
 	graph_add_nodes(&G, num);
 
 	// Get edges

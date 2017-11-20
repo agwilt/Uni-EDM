@@ -2,24 +2,30 @@ CC = gcc
 CFLAGS = -Wall -Wextra -Ofast -pedantic -std=c11
 #CFLAGS = -Wall -Wextra -g -O0 -pedantic -std=c11
 
-EULERWEG = Eulerweg
-MST = mst
+DEPS = config.h euler.h fib_heap.h graph_alg.h graph.h path.h
 BIN = bin
 
-$(MST): $(MST).c graph.c graph.h graph_alg.c graph_alg.h Makefile
-	$(CC) $(CFLAGS) fib_heap.c graph.c graph_alg.c $(MST).c -o $(BIN)/$(MST)
+%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
-$(EULERWEG): $(EULERWEG).c graph.c graph.h path.c path.h euler.c euler.h Makefile
-	$(CC) $(CFLAGS) path.c euler.c graph.c $(EULERWEG).c -o $(BIN)/$(EULERWEG)
+bfs: bfs.o graph.o graph_alg.o $(BIN)
+	$(CC) -o $(BIN)/$@ $^ $(CFLAGS)
 
-heapsort: heapsort.c fib_heap.h fib_heap.c Makefile
-	$(CC) $(CFLAGS) fib_heap.c heapsort.c -o $(BIN)/heapsort
+mst: mst.o graph.o graph_alg.o $(BIN)
+	$(CC) -o $(BIN)/$@ $^ $(CFLAGS)
 
-heap_test: heap_test.c fib_heap.h fib_heap.c Makefile
-	$(CC) $(CFLAGS) fib_heap.c heap_test.c -o $(BIN)/heap_test
+Eulerweg: Eulerweg.o graph.o path.o euler.o $(BIN)
+	$(CC) -o $(BIN)/$@ $^ $(CFLAGS)
+
+heapsort: heapsort.o fib_heap.o $(BIN)
+	$(CC) -o $(BIN)/$@ $^ $(CFLAGS)
+
+heap_test: heap_test.o fib_heap.o $(BIN)
+	$(CC) -o $(BIN)/$@ $^ $(CFLAGS)
 
 $(BIN):
 	mkdir $(BIN)
 
+.PHONY: clean
 clean:
-	rm -f $(BIN)/$(EULERWEG) $(BIN)/heapsort $(BIN)/heap_test $(BIN)/$(MST)
+	rm -f *.o
