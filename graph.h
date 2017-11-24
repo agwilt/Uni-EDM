@@ -31,6 +31,7 @@ struct graph {
 
 int graph_remove_edge(struct graph *G, int x, int offset);
 
+struct graph graph_duplicate(struct graph *G);
 struct graph graph_from_file(char const *filename, bool is_directed);
 
 // free all the nodes' RAM, as well as G->nodes

@@ -23,6 +23,12 @@ int main(int argc, char *argv[])
 	int *prev = malloc(sizeof(int) * G.num_nodes);
 	int s = atoi(argv[2]);
 	int t = atoi(argv[3]);
+
+#ifdef DEBUG
+	printf("Graph:\n");
+	graph_print(&G);
+#endif
+
 	if (s<0 || t<0 || s>G.num_nodes || t>G.num_nodes || s==t) {
 		printf("Error: invalid s, t!\n");
 		return 1;

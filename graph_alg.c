@@ -12,12 +12,14 @@ bool graph_bfs_path(struct graph *G, int s, int t, int *prev)
 {
 	prev[s] = -1;
 	char *visited = calloc(G->num_nodes, 1);
+	bool exists_st_path = false;
+
 	int *q_next, *q_back, *unexplored;
 	q_next = q_back = unexplored = malloc(G->num_nodes * sizeof(int));
 	// q_back is next place to put new item
 	// q_next is next item to take
 
-	*(q_back++) = s; // push r
+	*(q_back++) = s; // push s
 	visited[s] = true;
 
 	while (q_next != q_back) {
@@ -25,7 +27,7 @@ bool graph_bfs_path(struct graph *G, int s, int t, int *prev)
 		for (int i=0; i<(G->nodes[cur_node].num_n); ++i) {
 			int neighbour_id = G->nodes[cur_node].neighbours[i].id;
 			if (!visited[neighbour_id]) {
-				visited[neighbour_id] = 1;
+				visited[neighbour_id] = true;
 				prev[neighbour_id] = cur_node;
 				*(q_back++) = neighbour_id;
 				if (neighbour_id == t)
@@ -35,101 +37,26 @@ bool graph_bfs_path(struct graph *G, int s, int t, int *prev)
 	}
 
 end:
+	exists_st_path = visited[t];
 
 	free(visited);
 	free(unexplored);
 
-	return visited[t];
+	return exists_st_path;
 }
 
-struct graph graph_bfs(struct graph *G, int r)
-{
-	struct graph T = {.num_nodes = 0, .max_nodes=0, .nodes = NULL, .is_directed=G->is_directed};
-	graph_add_nodes(&T, G->num_nodes);
-	// BFS stuff
-	char *visited = calloc(G->num_nodes, 1);
-	int *q_next, *q_back, *unexplored;
-	q_next = q_back = unexplored = malloc(G->num_nodes * sizeof(int));
-	// q_back is next place to put new item
-	// q_next is next item to take
-
-	*(q_back++) = r; // push r
-	visited[r] = true;
-
-	while (q_next != q_back) {
-		int cur_node = *(q_next++);
-		for (int i=0; i<(G->nodes[cur_node].num_n); ++i) {
-			int neighbour_id = G->nodes[cur_node].neighbours[i].id;
-			if (!visited[neighbour_id]) {
-				visited[neighbour_id] = 1;
-				graph_add_edge(&T, cur_node, neighbour_id, G->nodes[cur_node].neighbours[i].weight);
-				*(q_back++) = neighbour_id;
-			}
-		}
-	}
-
-	free(visited);
-	free(unexplored);
-
-	return T;
-}
-
-#if 0
-// Max. Flow stuff (only for weight 1.0 on all edges ...)
-struct node **graph_ford_fulkerson(struct graph *G, int s, int t)
+// Edmonds Karp
+struct node **graph_edmonds_karp(struct graph *G, int s, int t)
 {
 	if (!G->is_directed) {
 		fprintf(stderr, "Error finding s-t-flow: graph is undirected!\n");
 		exit(1);
 	}
-	// f remembers where each node is "flowing to", NULL if nowhere
-	int *to = malloc(sizeof(int) * G->n);
-	for (int i = 0; i<G->n; ++i) to[i] = -1;
-	int *from = malloc(sizeof(int) * G->n);
-	for (int i = 0; i<G->n; ++i) from[i] = -1;
-	struct node **paths = calloc(sizeof(struct node *) * G->n);
-	size_t paths_len = 0;
 
-	// to save path: save previous node
-	int *prev = malloc(sizeof(int) * G->n);
-	for (int i = 0; i<G->n; ++i) prev[i] = -1;
-
-	// find f-augm. path
-	char *visited = calloc(G->num_nodes, 1);
-	int *unexplored = malloc(G->num_nodes * sizeof(int));
-	int *sp = unexplored;
-	int cur_node, neighbour_id;
-	visited[s] = true;
-	*(sp++) = s;
-
-	while (sp > unexplored) {
-		cur_node = *(--sp);
-		for (int i=0; i<(G->nodes[cur_node].num_n); ++i) {
-			neighbour_id = G->nodes[cur_node].neighbours[i].id;
-			if (from[neighbour_id] != cur_node && !visited[neighbour_id]) {
-				visited[neighbour_id] = 1;
-				prev[neighbour_id] = cur_node;
-				*(sp++) = neighbour_id;
-			}
-		}
-		if (to[cur_node] != -1 && !visited[to[cur_node]]) {
-			visited[to[cur_node]] = 1;
-			*(sp++) = to[cur_node];
-			prev[to[cur_node]] = cur_node;
-		}
-	}
-	if (!visited[t]) printf("Done!\n");
-
-	// augment along path
-	for (cur_node = t; cur_node != s; cur_node = prev[cur_node]) {
-		if (from[cur_node] == -1) {
-			to[prev[cur_node]] = cur_node;
-			from[cur_node] = prev[cur_node];
-		}
-	}
-	paths[paths_len++] = G->nodes+cur_node;
+	// save flow in f-augm. graph for now
+	struct graph Gf = graph_duplicate(G);
+	// still need to add all the back-edges
 }
-#endif
 
 // prints list of edges to stdout
 double graph_mst(struct graph *G)

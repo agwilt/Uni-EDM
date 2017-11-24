@@ -115,6 +115,21 @@ void graph_print(struct graph *G)
 		puts("There are no edges.");
 }
 
+struct graph graph_duplicate(struct graph *G)
+{
+	struct graph G_double = {.num_nodes = 0, .max_nodes = 0, .nodes = NULL, .is_directed=G->is_directed};
+	graph_add_nodes(&G_double, G->num_nodes);
+
+	// now, add edges (yay)
+	for (int cur_node=0; cur_node<G->num_nodes; cur_node++) {
+		for (int i=0; i<G->nodes[cur_node].num_n; ++i) {
+			node_add_neighbour(G->nodes+cur_node, G->nodes+(G->nodes[cur_node].neighbours[i].id), G->nodes[cur_node].neighbours[i].weight);
+		}
+	}
+
+	return G_double;
+}
+
 struct graph graph_from_file(char const *filename, bool is_directed)
 {
 	FILE *fp = fopen(filename, "r");

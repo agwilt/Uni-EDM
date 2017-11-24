@@ -7,8 +7,7 @@
 
 #include "config.h"
 
-struct graph graph_bfs(struct graph *G, int r);
-// find "shortest" s-t-path with BFS, return false if none exists
+// try to find "shortest" s-t-path with BFS; say if one exists at all
 bool graph_bfs_path(struct graph *G, int s, int t, int *prev);
 
 // minimal spanning tree w/ Prim, fibonacci heaps (print edges to stdout)
