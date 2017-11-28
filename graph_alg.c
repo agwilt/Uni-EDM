@@ -107,7 +107,7 @@ end:
 	return val;
 }
 
-double graph_edmonds_karp(struct *G, int s, int t)
+double graph_edmonds_karp(struct *G, int s, int t, double **f)
 {
 	if (!G->is_directed) {
 		fprintf(stderr, "Error: Graph is undirected!\n");
@@ -124,9 +124,11 @@ double graph_edmonds_karp(struct *G, int s, int t)
 	}
 
 	// flow saved as 2-dim array, intialized to 0
-	double **f = malloc(G->num_nodes * sizeof(double *));
-	for (int i=0; i<G->num_nodes; ++i) {
-		f[i] = calloc(G->num_nodes * sizeof(double));
+	if (f == NULL) {
+		f = malloc(G->num_nodes * sizeof(double *));
+		for (int i=0; i<G->num_nodes; ++i) {
+			f[i] = calloc(G->num_nodes * sizeof(double));
+		}
 	}
 
 	// new graph: G_back, where all the edges are the wrong way round
@@ -142,6 +144,7 @@ double graph_edmonds_karp(struct *G, int s, int t)
 	int *prev = malloc(G->num_nodes * sizeof(int));
 
 	double val;
+	double total_val = 0;
 	while (val = bfs_augm_path(G, G_back, f, s, t, prev)) {
 		// prev is now s-t-path, val is value by which to augment
 		for (int v=t; v!=s; v=prev[v]) {
@@ -150,11 +153,11 @@ double graph_edmonds_karp(struct *G, int s, int t)
 			else
 				f[prev[v]][v] += val;
 		}
+		total_val += val;
 	}
 	// now we have a max. s-t-flow
 
-	// now, separate out into cycles and paths
-	struct {int x; int y} start_edge = {0,0};
+	return total_val;
 }
 
 // prints list of edges to stdout
