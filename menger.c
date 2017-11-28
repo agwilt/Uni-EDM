@@ -32,6 +32,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	// Now, transform G to do clever trick
+
 	double **f = NULL;
 	graph_edmonds_karp(&G, s, t, &f);
 	int *start = calloc(G.num_nodes, sizeof(int));
