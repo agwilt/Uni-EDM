@@ -2,6 +2,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
+
 #include "graph.h"
 #include "graph_alg.h"
 #include "fib_heap.h"
@@ -52,6 +54,7 @@ static double bfs_augm_path(struct graph *G, struct graph *G_back, double **f, i
 	prev[s] = -1;
 	char *visited = calloc(G->num_nodes, 1);
 	double *residual = calloc(G->num_nodes, sizeof(double));
+	double val;
 
 	int *q_next, *q_back, *unexplored;
 	q_next = q_back = unexplored = malloc(G->num_nodes * sizeof(int));
@@ -68,7 +71,7 @@ static double bfs_augm_path(struct graph *G, struct graph *G_back, double **f, i
 			// only consider node if edge isn't saturated
 			if (!visited[neighbour_id] && f[cur_node][neighbour_id] < G->nodes[cur_node].neighbours[i].weight) {
 				visited[neighbour_id] = true;
-				residual[neighbour_id] = G->nodes[cur_nodes].neighbours[i].weight - f[cur_node][neighbour_id];
+				residual[neighbour_id] = G->nodes[cur_node].neighbours[i].weight - f[cur_node][neighbour_id];
 				prev[neighbour_id] = cur_node;
 				*(q_back++) = neighbour_id;
 				if (neighbour_id == t)
@@ -91,12 +94,11 @@ static double bfs_augm_path(struct graph *G, struct graph *G_back, double **f, i
 
 end:
 	// now calculate val
-	double val;
 	if (visited[t]) {
 		val = HUGE_VAL;
 		for (int v=t; v!=s; v=prev[v])
-			if (residual[prev[v]][v] < val)
-				val = residual[prev[v]][v];
+			if (residual[v] < val)
+				val = residual[v];
 	} else
 		val = 0;
 
@@ -107,36 +109,27 @@ end:
 	return val;
 }
 
-double graph_edmonds_karp(struct *G, int s, int t, double **f)
+double graph_edmonds_karp(struct graph *G, int s, int t, double ***f)
 {
 	if (!G->is_directed) {
 		fprintf(stderr, "Error: Graph is undirected!\n");
 		exit(1);
 	}
 
-	// set initial flow to 0
-	struct graph f = {.num_nodes = 0, .max_nodes = 0, .nodes = NULL, .is_directed=true};
-	graph_add_nodes(&f, G->num_nodes);
-	for (int cur_node=0; current<G->num_nodes; cur_node++) {
-		for (int i=0; i<G->nodes[cur_node].num_n; ++i) {
-			graph_add_edge(&f, cur_node, G->nodes[cur_node].neighbours[i].id, 0.0);
-		}
-	}
-
 	// flow saved as 2-dim array, intialized to 0
-	if (f == NULL) {
-		f = malloc(G->num_nodes * sizeof(double *));
+	if (*f == NULL) {
+		*f = malloc(G->num_nodes * sizeof(double *));
 		for (int i=0; i<G->num_nodes; ++i) {
-			f[i] = calloc(G->num_nodes * sizeof(double));
+			(*f)[i] = calloc(G->num_nodes, sizeof(double));
 		}
 	}
 
 	// new graph: G_back, where all the edges are the wrong way round
 	struct graph G_back = {.num_nodes=0, .max_nodes=0, .nodes=NULL, .is_directed=true};
 	graph_add_nodes(&G_back, G->num_nodes);
-	for (int cur_node=0; current<G->num_nodes; cur_node++) {
+	for (int cur_node=0; cur_node<G->num_nodes; cur_node++) {
 		for (int i=0; i<G->nodes[cur_node].num_n; ++i) {
-			graph_add_edge(&f, G->nodes[cur_node].neighbours[i].id, cur_node, G->nodes[cur_node].neighbours[i].weight);
+			graph_add_edge(&G_back, G->nodes[cur_node].neighbours[i].id, cur_node, G->nodes[cur_node].neighbours[i].weight);
 		}
 	}
 
@@ -145,13 +138,13 @@ double graph_edmonds_karp(struct *G, int s, int t, double **f)
 
 	double val;
 	double total_val = 0;
-	while (val = bfs_augm_path(G, G_back, f, s, t, prev)) {
+	while ((val = bfs_augm_path(G, &G_back, *f, s, t, prev)) > 0) {
 		// prev is now s-t-path, val is value by which to augment
 		for (int v=t; v!=s; v=prev[v]) {
-			if (f[v][prev[v]] >= val)
-				f[v][prev[v]] -= val;
+			if ((*f)[v][prev[v]] >= val)
+				(*f)[v][prev[v]] -= val;
 			else
-				f[prev[v]][v] += val;
+				(*f)[prev[v]][v] += val;
 		}
 		total_val += val;
 	}

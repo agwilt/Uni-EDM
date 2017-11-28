@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Ofast -pedantic -std=c11
-#CFLAGS = -Wall -Wextra -g -O0 -pedantic -std=c11
+#CFLAGS = -Wall -Wextra -Ofast -pedantic -std=c11
+CFLAGS = -Wall -Wextra -g -O0 -pedantic -std=c11
 DEPS = $(BIN) $(BUILD) Makefile
 
 BIN = bin
@@ -9,8 +9,8 @@ BUILD = obj
 $(BUILD)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-menger: $(BUILD)/menger.o $(BUILD)/graph.o $(DEPS)
-	$(CC) $(CFLAGS) $(BUILD)/menger.o $(BUILD)/graph.o -o $(BIN)/menger
+menger: $(BUILD)/menger.o $(BUILD)/graph.o $(BUILD)/graph_alg.o $(BUILD)/fib_heap.o $(DEPS)
+	$(CC) $(CFLAGS) $(BUILD)/menger.o $(BUILD)/graph.o $(BUILD)/graph_alg.o $(BUILD)/fib_heap.o -o $(BIN)/menger
 
 bfs: $(BUILD)/bfs.o $(BUILD)/graph.o $(BUILD)/graph_alg.o $(BUILD)/fib_heap.o $(DEPS)
 	$(CC) $(CFLAGS) $(BUILD)/bfs.o $(BUILD)/graph.o $(BUILD)/graph_alg.o $(BUILD)/fib_heap.o -o $(BIN)/bfs

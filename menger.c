@@ -32,27 +32,28 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	double **flow = NULL;
-	double val = graph_edmonds_karp(&G, s, t, f);
-	int *next = malloc(sizeof(int) * G->num_nodes);
-	next[s] = next[t] = -1;
-
-	struct {int x; int y} start_edge = {0,0};
+	double **f = NULL;
+	graph_edmonds_karp(&G, s, t, &f);
+	int *start = calloc(G.num_nodes, sizeof(int));
+	int v, num=0;
+	start[t] = -1;
 
 	// while value > 0, try to take apart flow, starting at start_edge
-	while (val > 0) {
-		// find next start_edge
-		while (f[start_edge.x][start_edge.y] == 0) {
-			if (y == G->num_nodes-1) {
-				y = 0;
-				++x;
-			} else ++y;
+	while (true) {
+		for (v=s; start[v]!=-1; v=start[v]) {
+			while (start[v] < G.num_nodes && f[v][start[v]] == 0) ++(start[v]);
+			if (start[v] == G.num_nodes) goto end;
+			printf("%d ", start[v]);
+			f[v][start[v]]--;
 		}
-		int v = start_edge.y;
+		printf("\n");
 
-		if (found path)
-			val--;
+		num++;
 	}
+end:
+	printf("Anzahl: %d\n", num);
+
+	free(f);
 
 	return 0;
 }

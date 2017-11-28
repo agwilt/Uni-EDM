@@ -10,6 +10,8 @@
 // try to find "shortest" s-t-path with BFS; say if one exists at all
 bool graph_bfs_path(struct graph *G, int s, int t, int *prev);
 
+double graph_edmonds_karp(struct graph *G, int s, int t, double ***f);
+
 // minimal spanning tree w/ Prim, fibonacci heaps (print edges to stdout)
 double graph_mst(struct graph *G);
 
