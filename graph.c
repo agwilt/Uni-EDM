@@ -123,7 +123,7 @@ struct graph graph_duplicate(struct graph *G)
 	// now, add edges (yay)
 	for (int cur_node=0; cur_node<G->num_nodes; cur_node++) {
 		for (int i=0; i<G->nodes[cur_node].num_n; ++i) {
-			node_add_neighbour(G->nodes+cur_node, G->nodes+(G->nodes[cur_node].neighbours[i].id), G->nodes[cur_node].neighbours[i].weight);
+			node_add_neighbour(G->nodes+cur_node, G->nodes[cur_node].neighbours[i].id, G->nodes[cur_node].neighbours[i].weight);
 		}
 	}
 

@@ -9,8 +9,11 @@ BUILD = obj
 $(BUILD)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
+menger: $(BUILD)/menger.o $(BUILD)/graph.o $(DEPS)
+	$(CC) $(CFLAGS) $(BUILD)/menger.o $(BUILD)/graph.o -o $(BIN)/menger
+
 bfs: $(BUILD)/bfs.o $(BUILD)/graph.o $(BUILD)/graph_alg.o $(BUILD)/fib_heap.o $(DEPS)
-	$(CC) $(CFAGS) $(BUILD)/bfs.o $(BUILD)/graph.o $(BUILD)/graph_alg.o $(BUILD)/fib_heap.o -o $(BIN)/bfs
+	$(CC) $(CFLAGS) $(BUILD)/bfs.o $(BUILD)/graph.o $(BUILD)/graph_alg.o $(BUILD)/fib_heap.o -o $(BIN)/bfs
 
 mst: $(BUILD)/mst.o $(BUILD)/graph.o $(BUILD)/graph_alg.o $(BUILD)/fib_heap.o graph.h graph_alg.h $(DEPS)
 	$(CC) $(CFLAGS) $(BUILD)/mst.o $(BUILD)/graph.o $(BUILD)/graph_alg.o $(BUILD)/fib_heap.o -o $(BIN)/mst

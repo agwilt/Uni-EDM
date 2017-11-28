@@ -45,19 +45,6 @@ end:
 	return exists_st_path;
 }
 
-// Edmonds Karp
-struct node **graph_edmonds_karp(struct graph *G, int s, int t)
-{
-	if (!G->is_directed) {
-		fprintf(stderr, "Error finding s-t-flow: graph is undirected!\n");
-		exit(1);
-	}
-
-	// save flow in f-augm. graph for now
-	struct graph Gf = graph_duplicate(G);
-	// still need to add all the back-edges
-}
-
 // prints list of edges to stdout
 double graph_mst(struct graph *G)
 {
