@@ -14,6 +14,7 @@ struct vert {
 	int *to, *from;			// arrays of edge ids
 };
 
+// edge (x,y)
 struct edge {
 	int id;
 	int x, y;
