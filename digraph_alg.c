@@ -1,5 +1,8 @@
 #define _POSIX_C_SOURCE 201112L
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "digraph.h"
 #include "digraph_alg.h"
 
@@ -55,7 +58,7 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 	// set phi
 	int phi_max = 0;
 	int *phi = calloc(G->n, sizeof(int));
-	phi[s] = n;
+	phi[s] = G->n;
 	// set Überschuss
 	long *ex = calloc(G->n, sizeof(long));
 	for (int i=0; i<G->V[s].d_plus; ++i) {
@@ -66,10 +69,10 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 	// At first: active verts are exactly s's neighbours
 	bool *is_active = calloc(G->n, sizeof(bool));
 	struct list *L = calloc(2*G->n - 1, sizeof(struct list));
-	L[0].array = malloc(G-V[s].d_plus * sizeof(int));
+	L[0].array = malloc(G->V[s].d_plus * sizeof(int));
 	L[0].len = L[0].max_len = G->V[s].d_plus;
 	for (int i=0; i<G->V[s].d_plus; ++i) {
-		L[0][i] = G->E[G->V[s].to[i]].y;
+		L[0].array[i] = G->E[G->V[s].to[i]].y;
 		is_active[G->E[G->V[s].to[i]].y] = true;
 	}
 	// set lists A[v] of possibly allowed edges starting in v
@@ -77,24 +80,24 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 	struct list *A = calloc(G->n, sizeof(struct list));
 
 	int v, e;
-	while (v = get_max_active_node(L, &phi_max) != -1) {
+	while ((v = get_max_active_node(L, is_active, &phi_max)) != -1) {
 		// find allowed edge
-		if (e = get_allowed_edge(A+v, is_allowed) != -1) {	// found allowed edge; push(e)
-			long val = ex[v]>G->E[e].weight ? G->E[e].weight : ex[v] ;
+		if ((e = get_allowed_edge(A+v, is_allowed)) != -1) {	// found allowed edge; push(e)
+			long delta = ex[v]>G->E[e].weight ? G->E[e].weight : ex[v] ;
 			if (v == G->E[e].x) {	// edge in G
-				f[e] += val;
-				if (val == G->E[e].weight) {	// v not active anymore
+				f[e] += delta;
+				if (delta == G->E[e].weight) {	// v not active anymore
 					is_active[v] = false;
-					L[phi_max].num--;
+					L[phi_max].len--;
 				}
 			} else {		// edge in G_back, reduce along original edge
-				f[e] -= val;
+				f[e] -= delta;
 			}
 
 
 
 		} else {		// no alowed edges; relabel(v)
-			phi[v] = 1+phi[G->V[v].to[0].y];
+			phi[v] = 1+phi[G->E[G->V[v].to[0]].y];
 			// find minimum phi among neighbours
 			for (int i=0; i<G->V[v].d_plus; ++i) {
 				if (phi[G->V[v].to[i]] < phi[i])
@@ -104,4 +107,6 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 
 
 	}
+
+	return f;
 }

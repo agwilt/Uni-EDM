@@ -7,3 +7,5 @@
 #include "config.h"
 
 long *digraph_max_flow(struct graph *G, int s, int t);
+
+#endif
