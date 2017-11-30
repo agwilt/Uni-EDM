@@ -193,7 +193,7 @@ void graph_free(struct graph *G)
 		if (G->nodes[i].max_n > 0)
 			free(G->nodes[i].neighbours);
 	}
-	free(G->nodes);
+	if (G->num_nodes > 0) free(G->nodes);
 }
 
 int graph_zus_komp(struct graph *G)
