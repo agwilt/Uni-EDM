@@ -51,14 +51,15 @@ int graph_add_nodes(struct graph *G, int num)
 	return G->n - 1;
 }
 
+/* Add edge with id edge_id to vertex */
 static void vert_add_edge(int *deg, int *max_deg, int **edges, int edge_id)
 {
 	if (*max_deg == 0) {
-		*edges = malloc(sizeof(struct edge));
+		*edges = malloc(sizeof(int));
 		*max_deg = 1;
 		check_null(*edges);
 	} else if (*deg >= *max_deg) {
-		*edges = realloc(*edges, *max_deg*2*sizeof(struct edge));
+		*edges = realloc(*edges, *max_deg*2*sizeof(int));
 		*max_deg <<= 1;
 		check_null(*edges);
 	}
