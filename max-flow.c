@@ -26,9 +26,17 @@ int main(int argc, char *argv[])
 
 	struct graph G = graph_from_file(argv[1]);
 
+#ifdef DEBUG
+	graph_print(&G);
+#endif
+
 	long *f = digraph_max_flow(&G, s, t);
 
-	printf("Max. flow value: %ld\n", digraph_flow_val(&G, s, f));
+	printf("%ld\n", digraph_flow_val(&G, s, f));
+	digraph_flow_print(f, G.m);
+
+	free(f);
+	graph_free(&G);
 
 	return 0;
 }

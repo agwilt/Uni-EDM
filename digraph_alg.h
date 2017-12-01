@@ -10,4 +10,6 @@ long *digraph_max_flow(struct graph *G, int s, int t);
 
 long digraph_flow_val(struct graph *G, int s, long *f);
 
+void digraph_flow_print(long *f, int m);
+
 #endif

@@ -45,7 +45,7 @@ int graph_add_nodes(struct graph *G, int num)
 			.id = G->n,
 			.d_plus = 0, .d_minus = 0, ._max_plus = 0, ._max_minus = 0,
 			.to = NULL, .from = NULL };
-		(G->n)++;
+		G->n++;
 	}
 
 	return G->n - 1;
@@ -62,7 +62,8 @@ static void vert_add_edge(int *deg, int *max_deg, int **edges, int edge_id)
 		*max_deg <<= 1;
 		check_null(*edges);
 	}
-	(*edges)[*deg++] = edge_id;
+	(*edges)[*deg] = edge_id;
+	*deg = *deg + 1;
 }
 
 int graph_add_edge(struct graph *G, int x, int y, long weight)
@@ -104,6 +105,40 @@ void graph_free(struct graph *G)
 	return;
 }
 
+#ifdef DEBUG
+void graph_print(struct graph *G)
+{
+	printf("Struct graph G:\n");
+	printf("| n = %d\n", G->n);
+	printf("| _max_n = %d\n", G->_max_n);
+	printf("| m = %d\n", G->m);
+	printf("| _max_m = %d\n", G->_max_m);
+	printf("+--------------\n");
+	printf("EDGES:\n");
+	for (int i=0; i<G->m; ++i) {
+		printf("%d:\n", i);
+		printf("\tid = %d\n", G->E[i].id);
+		printf("\tx = %d\n", G->E[i].x);
+		printf("\ty = %d\n", G->E[i].y);
+		printf("\tweight = %ld\n", G->E[i].weight);
+	}
+	printf("VERTICES:\n");
+	for (int i=0; i<G->n; ++i) {
+		printf("%d:\n", i);
+		printf("\tid = %d\n", G->V[i].id);
+		printf("\td_plus = %d\n", G->V[i].d_plus);
+		printf("\t_max_plus = %d\n", G->V[i]._max_plus);
+		printf("\tto = ");
+		for (int j=0; j<G->V[i].d_plus; ++j) printf("%d ", G->V[i].to[j]);
+		printf("\n");
+		printf("\td_minus = %d\n", G->V[i].d_minus);
+		printf("\t_max_minus = %d\n", G->V[i]._max_minus);
+		printf("\tfrom = ");
+		for (int j=0; j<G->V[i].d_minus; ++j) printf("%d ", G->V[i].from[j]);
+		printf("\n");
+	}
+}
+#else
 void graph_print(struct graph *G)
 {
 	setvbuf(stdout, NULL, _IOFBF, 0);
@@ -118,6 +153,7 @@ void graph_print(struct graph *G)
 		}
 	}
 }
+#endif
 
 struct graph graph_from_file(const char *filename)
 {
