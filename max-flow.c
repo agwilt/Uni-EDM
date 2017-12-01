@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "digraph.h"
+#include "digraph_alg.h"
 #include "config.h"
 
 int main(int argc, char *argv[])
@@ -24,6 +25,10 @@ int main(int argc, char *argv[])
 	}
 
 	struct graph G = graph_from_file(argv[1]);
+
+	long *f = digraph_max_flow(&G, s, t);
+
+	printf("Max. flow value: %ld\n", digraph_flow_val(&G, s, f));
 
 	return 0;
 }

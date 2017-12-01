@@ -11,6 +11,9 @@ struct list {
 	size_t len, max_len;
 };
 
+static inline void relabel(int v, struct graph *G, int s, int t, long *f, long *ex, struct list *L, struct list *A, bool *is_allowed, int *phi, int *phi_max);
+static inline void push(int v, int e, struct graph *G, int s, int t, long *f, long *ex, struct list *L, struct list *A, bool *is_allowed, int *phi, int *phi_max);
+
 /* Intelligently add an int to a list */
 static void append_to_list(struct list *list, int x)
 {
@@ -21,22 +24,23 @@ static void append_to_list(struct list *list, int x)
 	list->array[list->len++] = x;
 }
 
-/* Free an entire array of lists, and the array itsself */
-static void free_lists(struct list *lists, size_t n)
+/* Free an entire array of lists, and the array itself */
+static void free_lists(struct list *lists, int n)
 {
 	for (int i=0; i<n; ++i)
-		free(lists[i].array);
+		if (lists[i].len > 0)
+			free(lists[i].array);
 	free(lists);
 }
 
 /* return active vertex with max. phi, last in list L[i] */
-static int get_max_active_node(struct list *L, bool *is_active, int *max)
+static int get_max_active_node(struct list *L, int *max, long *ex)
 {
 	for (;*max >= 0; --(*max)) {
 		while (L[*max].len > 0) {
 			int v = L[*max].array[L[*max].len - 1];
 			/* WARNING: vertices in L aren't always active, so check if they really are */
-			if (is_active[v])
+			if (ex[v] > 0)
 				return v;
 			else
 				L[*max].len--;
@@ -66,7 +70,6 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 	 * 	phi: distance marker
 	 * 	phi_max: >= max{phi(v) | v active}
 	 * 	ex: inflow - outflow. v is active, if ex(v)>0 and v!=t
-	 * 	is_active: saves if a vertex is active, to prevent O(d_plus+d_minus) checking time
 	 * 	L[i], 0<=i<2n-1: list of possibly active vertices with phi(v)=i
 	 * 	is_allowed: saves if an edge is allowed: phi(v) = phi(w) + 1
 	 * 	A[v], 0<=v<n: saves list of (possibly) allowed edges (in G_f) starting in v.
@@ -88,14 +91,12 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 		ex[s] -= f[G->V[s].to[i]];
 	}
 	// set lists L[i] of possible active vertices with phi(v) = i
-	// At first: active verts are exactly s's neighbours
-	bool *is_active = calloc(G->n, sizeof(bool));
+	// At first: active vertices are exactly s's neighbours
 	struct list *L = calloc(2*G->n - 1, sizeof(struct list));
 	L[0].array = malloc(G->V[s].d_plus * sizeof(int));
 	L[0].len = L[0].max_len = G->V[s].d_plus;
 	for (int i=0; i<G->V[s].d_plus; ++i) {
 		L[0].array[i] = G->E[G->V[s].to[i]].y;
-		is_active[G->E[G->V[s].to[i]].y] = true;
 	}
 	// set lists A[v] of possibly allowed edges starting in v
 	bool *is_allowed = calloc(G->m, sizeof(bool));
@@ -106,16 +107,15 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 	 */
 
 	int v, e;
-	while ((v = get_max_active_node(L, is_active, &phi_max)) != -1) {
+	while ((v = get_max_active_node(L, &phi_max, ex)) != -1) {
 		if ((e = get_allowed_edge(A+v, is_allowed)) != -1)
-			push(v, e, G, f, ex, L, is_active, A, is_allowed, phi, phi_max);
+			push(v, e, G, s, t, f, ex, L, A, is_allowed, phi, &phi_max);
 		else
-			relabel(v, G, f, ex, L, is_active, A, is_allowed, phi, phi_max);
+			relabel(v, G, s, t, f, ex, L, A, is_allowed, phi, &phi_max);
 	}
 
 	free(phi);
 	free(ex);
-	free(is_active);
 	free(is_allowed);
 	free_lists(L, 2*G->n);
 	free_lists(A, G->n);
@@ -123,7 +123,7 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 	return f;
 }
 
-inline void relabel(int v, struct graph *G, long *f, long *ex, struct list *L, bool *is_active, struct list *A, bool *is_allowed, int *phi, int phi_max)
+static inline void relabel(int v, struct graph *G, int s, int t, long *f, long *ex, struct list *L, struct list *A, bool *is_allowed, int *phi, int *phi_max)
 {
 	phi[v] = 1+phi[G->E[G->V[v].to[0]].y];
 	/* find minimum phi among neighbours */
@@ -131,20 +131,20 @@ inline void relabel(int v, struct graph *G, long *f, long *ex, struct list *L, b
 		if (phi[G->V[v].to[i]] < phi[i])
 			phi[i] = phi[G->V[v].to[i]];
 	}
+	if (phi[v] > *phi_max) *phi_max = phi[v];
 }
 
-inline void push(int v, int e, struct graph *G, long *f, long *ex, struct list *L, bool *is_active, struct list *A, bool *is_allowed, int *phi, int phi_max)
+static inline void push(int v, int e, struct graph *G, int s, int t, long *f, long *ex, struct list *L, struct list *A, bool *is_allowed, int *phi, int *phi_max)
 {
 	/* find delta to augment by */
 	long delta;
-	/* e's capacity is "to small", e saturated, v still active */
-	if (ev[v] > G->E[e].weight) {
+	/* e's capacity is "to small", v still active */
+	if (ex[v] > G->E[e].weight) {
 		delta = G->E[e].weight;
 		ex[v] -= delta;		/* still >0 */
-		/* ex[v] is now 0, e possibly not saturated, v deactivated */
+	/* ex[v] is now 0, v deactivated */
 	} else {
 		delta = ex[v];
-		is_active[v] = false;
 		ex[v] = 0;
 		L[phi_max].len--;	/* by choice of v, phi(v) = phi_max */
 	}
@@ -164,11 +164,21 @@ inline void push(int v, int e, struct graph *G, long *f, long *ex, struct list *
 	} else {		/* edge in G_back, reduce along original edge */
 		f[e] -= delta;
 		w = G->E[e].x;
+		/* Possible update phi_max. If e=(v,w), no need since phi(v)>phi(w). */
+		if (phi[w] > *phi_max) *phi_max = phi[w];
 	}
 
 	/* w is now definitely active. Add to L if newly active */
-	if (!is_active[w] && w != t) {
-		is_active[w] = true;
-		append_to_list(L[phi[w]], w);
+	if (ex[w]==0 && w != t)
+		append_to_list(L+phi[w], w);
+	ex[w] += delta;
+}
+
+long digraph_flow_val(struct graph *G, int s, long *f)
+{
+	long val = 0;
+	for (int i=0; i<G->V[s].d_plus; ++i) {
+		val += f[G->E[G->V[s].to[i]].weight];
 	}
+	return val;
 }
