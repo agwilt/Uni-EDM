@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	struct graph G = graph_from_file(argv[1]);
 
 #ifdef DEBUG
-	graph_print(&G);
+	if (G.n < 1000)	graph_print(&G);
 #endif
 
 	long *f = digraph_max_flow(&G, s, t);

@@ -12,11 +12,11 @@ struct list {
 	size_t len, max_len;
 };
 
-static inline void relabel(int v, struct graph *G, int s, int t, long *f, long *ex, struct list *L, struct list *A, int *phi, int *phi_max);
-static inline void push(int v, int e, struct graph *G, int s, int t, long *f, long *ex, struct list *L, struct list *A, int *phi, int *phi_max);
+static inline void relabel(int v, struct graph *G, long *f, struct list *L, struct list *A, int *phi, int *phi_max);
+static inline void push(int v, int e, struct graph *G, int t, long *f, long *ex, struct list *L, struct list *A, int *phi, int *phi_max);
 
 #ifdef DEBUG
-void status(struct graph *G, long *f, long *ex, int *phi, int phi_max, struct list *L, struct list *A);
+void status(struct graph *G, int t, long *f, long *ex, int *phi, int phi_max, struct list *L, struct list *A);
 #endif
 
 /* Intelligently add an int to a list */
@@ -148,17 +148,18 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 
 	int v, e;
 #ifdef DEBUG
-	status(G, f, ex, phi, phi_max, L, A);
+	status(G, t, f, ex, phi, phi_max, L, A);
 	while ((v = get_max_active_node(L, &phi_max, ex, G, s, t)) != -1) {
 #else
 	while ((v = get_max_active_node(L, &phi_max, ex)) != -1) {
 #endif
 		if ((e = get_allowed_edge(A, v, phi, G, f)) != -1)
-			push(v, e, G, s, t, f, ex, L, A, phi, &phi_max);
+			push(v, e, G, t, f, ex, L, A, phi, &phi_max);
 		else
-			relabel(v, G, s, t, f, ex, L, A, phi, &phi_max);
+			relabel(v, G, f, L, A, phi, &phi_max);
 #ifdef DEBUG
-		status(G, f, ex, phi, phi_max, L, A);
+		printf("Done Loop!\n");
+		status(G, t, f, ex, phi, phi_max, L, A);
 #endif
 	}
 
@@ -170,10 +171,10 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 	return f;
 }
 
-static inline void relabel(int v, struct graph *G, int s, int t, long *f, long *ex, struct list *L, struct list *A, int *phi, int *phi_max)
+static inline void relabel(int v, struct graph *G, long *f, struct list *L, struct list *A, int *phi, int *phi_max)
 {
 #ifdef DEBUG
-	printf("RELABEL(v=%d, G, s=%d, t=%d, f, ex=%p, L=%p, A=%p, phi=%p, phi_max=%d)!\n", v, s, t, (void *) ex, (void *) L, (void *) A, (void *) phi, *phi_max);
+	printf("RELABEL(v=%d, G, f, L=%p, A=%p, phi=%p, phi_max=%d)!\n", v, (void *) L, (void *) A, (void *) phi, *phi_max);
 	if (*phi_max != phi[v]) printf("Oh dear, relabeling v with bad phi(v)!\n");
 	if (L[phi[v]].array[L[phi[v]].len - 1] != v) printf("Oh dear, relabeling bad v!\n");
 #endif
@@ -222,10 +223,10 @@ static inline void relabel(int v, struct graph *G, int s, int t, long *f, long *
 #endif
 }
 
-static inline void push(int v, int e, struct graph *G, int s, int t, long *f, long *ex, struct list *L, struct list *A, int *phi, int *phi_max)
+static inline void push(int v, int e, struct graph *G, int t, long *f, long *ex, struct list *L, struct list *A, int *phi, int *phi_max)
 {
 #ifdef DEBUG
-	printf("PUSH(%d)!\n", e);
+	printf("PUSH(v=%d, e=%d, G, t=%d, f=%p, ex=%p, L=%p, A=%p, phi=%p, phi_max=%d)!\n", v, e, t, (void *) f, (void *) ex, (void *) L, (void *) A, (void *) phi, *phi_max);
 #endif
 	/* find delta to augment by */
 	long delta;
@@ -282,13 +283,15 @@ long digraph_flow_val(struct graph *G, int s, long *f)
 void digraph_flow_print(long *f, int m)
 {
 	for (int i=0; i<m; ++i) {
-		printf("%d %ld\n", i, f[i]);
+		if (f[i] > 0)
+			printf("%d %ld\n", i, f[i]);
 	}
 }
 
 #ifdef DEBUG
-void status(struct graph *G, long *f, long *ex, int *phi, int phi_max, struct list *L, struct list *A)
+void status(struct graph *G, int t, long *f, long *ex, int *phi, int phi_max, struct list *L, struct list *A)
 {
+	printf("STATUS: checking ...\n");
 	bool everything_fine = true;
 	/* Sanity check */
 	/* ex_f */
@@ -305,14 +308,14 @@ void status(struct graph *G, long *f, long *ex, int *phi, int phi_max, struct li
 	}
 	/* phi_max */
 	for (int v=0; v<G->n; ++v) {
-		if (phi[v] > phi_max && ex[v]>0) {
+		if (v!=t && phi[v] > phi_max && ex[v]>0) {
 			printf("Warning: found active node %d with phi(%d) = %d > %d = phi_max\n", v, v, phi[v], phi_max);
 			everything_fine = false;
 		}
 	}
 	/* check if active nodes in L */
 	for (int v=0; v<G->n; ++v) {
-		if (ex[v] > 0) {
+		if (v != t && ex[v] > 0) {
 			bool in_L = false;
 			for (int i=0; i<L[phi[v]].len; ++i) {
 				if (L[phi[v]].array[i] == v) in_L = true;
@@ -323,13 +326,13 @@ void status(struct graph *G, long *f, long *ex, int *phi, int phi_max, struct li
 			}
 		}
 	}
-	/* check if allowed edges in L */
+	/* check if allowed edges in A */
 	for (int v=0; v<G->n; ++v) {
-		for (int i=0; i<G->V[v].d_plus; ++i) {
+		for (int i=0; i < G->V[v].d_plus; ++i) {
 			int e = G->V[v].to[i];
 			if (f[e] < G->E[e].weight && phi[v] == phi[G->E[e].y] + 1) {	/* e allowed edge, in G */
 				bool in_A = false;
-				for (int j=0; j<A[v].len; ++i) {
+				for (int j=0; j<A[v].len; ++j) {
 					if (A[v].array[j] == e) in_A = true;
 				}
 				if (!in_A) {
@@ -338,11 +341,11 @@ void status(struct graph *G, long *f, long *ex, int *phi, int phi_max, struct li
 				}
 			}
 		}
-		for (int i=0; i<G->V[v].d_minus; ++i) {
+		for (int i=0; i < G->V[v].d_minus; ++i) {
 			int e = G->V[v].from[i];
 			if (f[e] > 0 && phi[v] == phi[G->E[e].x] + 1) {	/* e allowed edge, in G_back */
 				bool in_A = false;
-				for (int j=0; j<A[v].len; ++i) {
+				for (int j=0; j<A[v].len; ++j) {
 					if (A[v].array[j] == e) in_A = true;
 				}
 				if (!in_A) {
@@ -354,6 +357,9 @@ void status(struct graph *G, long *f, long *ex, int *phi, int phi_max, struct li
 	
 	}
 	if (everything_fine) printf("STATUS: Your variables are in order.\n");
+	else printf("STATUS: You seem to have a problem.\n");
+
+	if (G->n > 1000) return;
 	
 	/* Print out variables */
 	printf("+++++++++++++++++++\n");
