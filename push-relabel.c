@@ -126,16 +126,17 @@ static inline void push(int v, int e, struct graph *G, int t, long *f, long *ex,
 {
 	/* find delta to augment by */
 	long delta;
-	/* e's capacity is "to small", v still active */
+
+	/* Set ex */
 	if (ex[v] > G->E[e].weight) {
 		delta = G->E[e].weight;
 		ex[v] -= delta;		/* still >0 */
-	/* ex[v] is now 0, v deactivated */
-	} else {
+	} else {	/* v is deactivated */
 		delta = ex[v];
 		ex[v] = 0;
 		L[*phi_max].len--;	/* by choice of v, phi(v) = phi_max */
 	}
+
 	/* Have a look if e is still allowed
 	 * If e is saturated, it's not allowed anymore
 	 * If it isn't, it's still allowed
@@ -144,6 +145,7 @@ static inline void push(int v, int e, struct graph *G, int t, long *f, long *ex,
 		A[v].len--;
 	}
 
+	/* Set flow */
 	int w;	/* the other vertex */
 	if (v == G->E[e].x) {	/* edge in G */
 		f[e] += delta;
@@ -151,7 +153,6 @@ static inline void push(int v, int e, struct graph *G, int t, long *f, long *ex,
 	} else {		/* edge in G_back, reduce along original edge */
 		f[e] -= delta;
 		w = G->E[e].x;
-		/* Possible update phi_max. If e=(v,w), no need since phi(v)>phi(w). */
 	}
 	if (phi[w] > *phi_max) *phi_max = phi[w];
 
