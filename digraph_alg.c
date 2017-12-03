@@ -140,8 +140,7 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 		L[0].max_len = G->V[s].d_plus;
 		for (int i=0; i<G->V[s].d_plus; ++i) {
 			if (G->E[G->V[s].to[i]].y != t) {
-				L[0].array[i] = G->E[G->V[s].to[i]].y;
-				L[0].len++;
+				append_to_list(L, G->E[G->V[s].to[i]].y);
 			}
 		}
 	}
