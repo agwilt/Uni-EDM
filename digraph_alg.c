@@ -26,11 +26,14 @@ static void append_to_list(struct list *list, int x)
 	printf("append_to_list(list=%p, %d);\n", (void *) list, x);
 #endif
 	if (list->max_len == 0) {
+#ifdef DEBUG
+		if (list->array != NULL) printf("weird ...\n");
+#endif
 		list->array = malloc(sizeof(int));
 		list->max_len = 1;
 	} else if (list->len >= list->max_len) {
 		list->array = realloc(list->array, sizeof(int)*2*list->len);
-		list->max_len >>= 1;
+		list->max_len <<= 1;
 	}
 	list->array[list->len] = x;
 	list->len++;
@@ -40,20 +43,20 @@ static void append_to_list(struct list *list, int x)
 static void free_lists(struct list *lists, int n)
 {
 	for (int i=0; i<n; ++i)
-		if (lists[i].len > 0)
+		if (lists[i].max_len > 0)
 			free(lists[i].array);
 	free(lists);
 }
 
 /* return active vertex with max. phi, last in list L[i] */
 #ifdef DEBUG
-static int get_max_active_node(struct list *L, int *max, long *ex, struct graph *G, int s, int t)
+static int get_max_active_node(struct list *L, int *max, long *ex, int s, int t)
 #else
 static int get_max_active_node(struct list *L, int *max, long *ex)
 #endif
 {
 #ifdef DEBUG
-	printf("get_max_active_node(L=%p, max=%d, ex=%p, G, s=%d, t=%d)\n", (void *) L, *max, (void *) ex, s, t);
+	printf("get_max_active_node(L=%p, max=%d, ex=%p, s=%d, t=%d)\n", (void *) L, *max, (void *) ex, s, t);
 //	*max = 2*G->n - 1;
 #endif
 	for (;*max >= 0; --(*max)) {
@@ -91,11 +94,14 @@ static int get_allowed_edge(struct list *A, int v, int *phi, struct graph *G, lo
 #endif
 	while (A[v].len > 0) {
 		int e = A[v].array[A[v].len - 1];
-		if ((f[e] < G->E[e].weight && phi[v] == phi[G->E[e].y] + 1) || (f[e] > 0 && phi[G->E[e].y] == phi[v] + 1))
+		if ((f[e] < G->E[e].weight && phi[v] == phi[G->E[e].y] + 1) || (f[e] > 0 && phi[v] == phi[G->E[e].x] + 1))
 			return e;
 		else
 			A[v].len--;
 	}
+#ifdef DEBUG
+	printf("Aww, no allowed edges found.\n");
+#endif
 	return -1;
 }
 
@@ -149,7 +155,7 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 	int v, e;
 #ifdef DEBUG
 	status(G, t, f, ex, phi, phi_max, L, A);
-	while ((v = get_max_active_node(L, &phi_max, ex, G, s, t)) != -1) {
+	while ((v = get_max_active_node(L, &phi_max, ex, s, t)) != -1) {
 #else
 	while ((v = get_max_active_node(L, &phi_max, ex)) != -1) {
 #endif
@@ -317,7 +323,7 @@ void status(struct graph *G, int t, long *f, long *ex, int *phi, int phi_max, st
 	for (int v=0; v<G->n; ++v) {
 		if (v != t && ex[v] > 0) {
 			bool in_L = false;
-			for (int i=0; i<L[phi[v]].len; ++i) {
+			for (size_t i=0; i<L[phi[v]].len; ++i) {
 				if (L[phi[v]].array[i] == v) in_L = true;
 			}
 			if (!in_L) {
@@ -332,7 +338,7 @@ void status(struct graph *G, int t, long *f, long *ex, int *phi, int phi_max, st
 			int e = G->V[v].to[i];
 			if (f[e] < G->E[e].weight && phi[v] == phi[G->E[e].y] + 1) {	/* e allowed edge, in G */
 				bool in_A = false;
-				for (int j=0; j<A[v].len; ++j) {
+				for (size_t j=0; j<A[v].len; ++j) {
 					if (A[v].array[j] == e) in_A = true;
 				}
 				if (!in_A) {
@@ -345,7 +351,7 @@ void status(struct graph *G, int t, long *f, long *ex, int *phi, int phi_max, st
 			int e = G->V[v].from[i];
 			if (f[e] > 0 && phi[v] == phi[G->E[e].x] + 1) {	/* e allowed edge, in G_back */
 				bool in_A = false;
-				for (int j=0; j<A[v].len; ++j) {
+				for (size_t j=0; j<A[v].len; ++j) {
 					if (A[v].array[j] == e) in_A = true;
 				}
 				if (!in_A) {
@@ -377,7 +383,7 @@ void status(struct graph *G, int t, long *f, long *ex, int *phi, int phi_max, st
 	printf("| L:\n");
 	for (int i=0; i<2*G->n; ++i) {
 		printf("| \tL[%d] = {", i);
-		for (int j=0; j<L[i].len; ++j) {
+		for (size_t j=0; j<L[i].len; ++j) {
 			printf("%d, ", L[i].array[j]);
 		}
 		printf("}\n");
@@ -385,7 +391,7 @@ void status(struct graph *G, int t, long *f, long *ex, int *phi, int phi_max, st
 	printf("| A:\n");
 	for (int i=0; i<G->n; ++i) {
 		printf("| \tA[%d] = {", i);
-		for (int j=0; j<A[i].len; ++j) {
+		for (size_t j=0; j<A[i].len; ++j) {
 			printf("%d, ", A[i].array[j]);
 		}
 		printf("}\n");
