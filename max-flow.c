@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
 
 	long *f = digraph_max_flow(&G, s, t);
 
+	setvbuf(stdout, NULL, _IOFBF, 0);
 	printf("%ld\n", digraph_flow_val(&G, s, f));
 	digraph_flow_print(f, G.m);
 
