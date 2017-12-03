@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "digraph.h"
-#include "digraph_alg.h"
+#include "push-relabel.h"
 #include "config.h"
 
 int main(int argc, char *argv[])
@@ -25,10 +25,6 @@ int main(int argc, char *argv[])
 	}
 
 	struct graph G = graph_from_file(argv[1]);
-
-#ifdef DEBUG
-	if (G.n < 1000)	graph_print(&G);
-#endif
 
 	long *f = digraph_max_flow(&G, s, t);
 

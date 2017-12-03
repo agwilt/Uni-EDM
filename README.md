@@ -6,7 +6,7 @@
  * graph\_alg.h: currently MST for undirected graphs
 
  * digraph.h: better directed graph stuff
- * digraph_alg.h: max-flow with push relabel
+ * push-relabel.h: max-flow with push relabel
 
 # Programs:
  * Eulerweg.c: check if input graph is connected/Eulerian, find Euler-cycle if both.
