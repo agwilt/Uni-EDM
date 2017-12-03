@@ -1,7 +1,7 @@
 #define _POSIX_C_SOURCE 201112L
 
-#ifndef DIGRAPH_ALG_H
-#define DIGRAPH_ALG_H
+#ifndef PUSH_RELABEL_H
+#define PUSH_RELABEL_H
 
 #include "digraph.h"
 #include "config.h"

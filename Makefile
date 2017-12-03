@@ -9,8 +9,8 @@ BUILD = obj
 $(BUILD)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-max-flow: $(BUILD)/max-flow.o $(BUILD)/digraph.o $(BUILD)/digraph_alg.o $(DEPS)
-	$(CC) $(CFLAGS) $(BUILD)/max-flow.o $(BUILD)/digraph.o $(BUILD)/digraph_alg.o -o $(BIN)/max-flow
+max-flow: $(BUILD)/max-flow.o $(BUILD)/digraph.o $(BUILD)/push-relabel.o $(DEPS)
+	$(CC) $(CFLAGS) $(BUILD)/max-flow.o $(BUILD)/digraph.o $(BUILD)/push-relabel.o -o $(BIN)/max-flow
 
 menger: $(BUILD)/menger.o $(BUILD)/graph.o $(BUILD)/graph_alg.o $(BUILD)/fib_heap.o $(DEPS)
 	$(CC) $(CFLAGS) $(BUILD)/menger.o $(BUILD)/graph.o $(BUILD)/graph_alg.o $(BUILD)/fib_heap.o -o $(BIN)/menger
