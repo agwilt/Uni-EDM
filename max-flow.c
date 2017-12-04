@@ -26,6 +26,11 @@ int main(int argc, char *argv[])
 
 	struct graph G = graph_from_file(argv[1]);
 
+	/* Here it would be possible to merge parallel edges to get O(n^2sqrt(m)) runtime,
+	 * but for graphs large enough for that to matter, you don't want to spend the RAM
+	 * anyway.
+	 */
+
 	long *f = digraph_max_flow(&G, s, t);
 
 	setvbuf(stdout, NULL, _IOFBF, 0);
