@@ -3,6 +3,8 @@
 #ifndef INT_LIST_H
 #define INT_LIST_H
 
+#include <stddef.h>
+
 struct list {
 	int *array;
 	size_t len, max_len;
