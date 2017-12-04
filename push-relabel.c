@@ -6,17 +6,11 @@
 
 #include "digraph.h"
 #include "push-relabel.h"
-
-struct list {
-	int *array;
-	size_t len, max_len;
-};
+#include "int_list.h"
 
 static inline void relabel(int v, struct graph *G, long *f, struct list *L, struct list *A, int *phi, int *phi_max);
 static inline void push(int v, int e, struct graph *G, int t, long *f, long *ex, struct list *L, struct list *A, int *phi, int *phi_max);
 
-static void append_to_list(struct list *list, int x);
-static void free_lists(struct list *lists, int n);
 static int get_max_active_node(struct list *L, int *max, long *ex);
 static int get_allowed_edge(struct list *A, int v, int *phi, struct graph *G, long *f);
 
@@ -177,29 +171,6 @@ void digraph_flow_print(long *f, int m)
 		if (f[i] > 0)
 			printf("%d %ld\n", i, f[i]);
 	}
-}
-
-/* Intelligently add an int to a list */
-static void append_to_list(struct list *list, int x)
-{
-	if (list->max_len == 0) {
-		list->array = malloc(sizeof(int));
-		list->max_len = 1;
-	} else if (list->len >= list->max_len) {
-		list->array = realloc(list->array, sizeof(int)*2*list->len);
-		list->max_len <<= 1;
-	}
-	list->array[list->len] = x;
-	list->len++;
-}
-
-/* Free an entire array of lists, and the array itself */
-static void free_lists(struct list *lists, int n)
-{
-	for (int i=0; i<n; ++i)
-		if (lists[i].max_len > 0)
-			free(lists[i].array);
-	free(lists);
 }
 
 /* return active vertex with max. phi, last in list L[i] */
