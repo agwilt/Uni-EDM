@@ -32,7 +32,9 @@ struct graph {
 struct graph graph_from_file(char const *filename);
 void graph_free(struct graph *G);
 
+/* return new last node */
 int graph_add_nodes(struct graph *G, int num);
+/* Return value: id of new edge */
 int graph_add_edge(struct graph *G, int x, int y, long weight);
 
 void graph_print(struct graph *G);
