@@ -36,8 +36,9 @@ $(BIN):
 $(BUILD):
 	mkdir $(BUILD)
 
-.PHONY: clean bin_clean
-clean:
-	rm -rf "$(BUILD)"
+.PHONY: clean bin_clean obj_clean
+clean: bin_clean obj_clean
 bin_clean:
-	rm -f "$(BIN)/*"
+	rm -rf "$(BIN)"
+obj_clean:
+	rm -rf "$(BUILD)"
