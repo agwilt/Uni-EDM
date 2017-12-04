@@ -100,8 +100,12 @@ void graph_free(struct graph *G)
 			free(G->V[i].from);
 	}
 	// free list of verts, edges
-	if (G->n > 0) free(G->V);
-	if (G->m > 0) free(G->E);
+	if (G->_max_n > 0) free(G->V);
+	if (G->_max_m > 0) free(G->E);
+
+	G->n = G->m = G->_max_n = G->_max_m = 0;
+	G->V = NULL;
+	G->E = NULL;
 
 	return;
 }
