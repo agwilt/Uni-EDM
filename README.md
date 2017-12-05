@@ -4,7 +4,7 @@
  * path.h: Singly-linked list structure to store paths in
  * fib\_heap.h: generic fibonacci heaps
  * graph\_alg.h: currently MST for undirected graphs
-
+ * int_list.h: vector-like things for ints only
  * digraph.h: better directed graph stuff
  * push-relabel.h: max-flow with push relabel
 

@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
 		graph_free(&G_compr);
 		for (int i=0; i<G.n; ++i)
 			free(edges[i]);
+		free(edges);
 
 	} else {
 		f = digraph_max_flow(&G, s, t);
