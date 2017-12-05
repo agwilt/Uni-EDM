@@ -14,8 +14,5 @@
  * heap\_test.c: interactive fibonacci heap
  * heapsort.c: test program to sort numbers
  * bfs.c: find shortest path in indirected graph with BFS
+ * menger.c: find edge-disjoint s-t-paths
  * max-flow.c: find maximal s-t-flow in directed graph
-
-# Rubbish:
- * menger.c: this doesn't work
- * old_menger.c: this doesn't either

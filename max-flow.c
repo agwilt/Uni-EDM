@@ -13,29 +13,37 @@ int main(int argc, char *argv[])
 	int s = 0;
 	int t = 1;
 	bool merge = false;
+	int arg_start = 1;
 
 
-	if (argc<=1) {
-		printf("Usage: %s [-m] filename [s t]\nDefault: s=0, t=1.\n", argv[0]);
-		printf("\t-m: Merge parallel edges for better asymptotic runtime.\n");
-		return 1;
-	} else if (argc>=3 && argv[1][0] == '-' && argv[1][1] == 'm') {
-		/* Get command-line option */
-		merge = true;
-		argv++;
+	/* Get command-line option */
+	if (argc > 1 && argv[arg_start][0] == '-') {
+		if (argv[arg_start][1] == 'm') {
+			merge = true;
+		} else {
+			fprintf(stderr, "Error: unrecognised option: \"%s\"\n", argv[1]);
+			return 1;
+		}
+		arg_start++;
 		argc--;
 	}
 
 	if (argc>=4) {
-		s = atoi(argv[2]);
-		t = atoi(argv[3]);
+		s = atoi(argv[arg_start+1]);
+		t = atoi(argv[arg_start+2]);
 		if (s == t) {
 			fprintf(stderr, "Error: s = t.\n");
 			return 1;
 		}
 	}
 
-	struct graph G = graph_from_file(argv[1]);
+	if (argc<=1) {
+		printf("Usage: %s [-m] filename [s t]\nDefault: s=0, t=1.\n", argv[0]);
+		printf("Options: -m: Merge parallel edges for better asymptotic runtime.\n");
+		return 1;
+	}
+
+	struct graph G = graph_from_file(argv[arg_start]);
 	if (s >= G.n || t >= G.n) {
 		fprintf(stderr, "Error: invalid s or t.\n");
 		return 1;
