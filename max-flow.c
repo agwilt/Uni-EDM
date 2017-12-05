@@ -51,10 +51,9 @@ int main(int argc, char *argv[])
 		}
 
 		struct graph G_compr = {.n=0, .m=0, ._max_n=0, ._max_m=0, .E=NULL, .V=NULL};
-		G_compr.E = malloc(sizeof(struct edge));
-		/* Silly trick: dummy edge 0 to allow use of calloc */
-		G_compr.E[0] = (struct edge) {.id=0, .x=0, .y=0, .weight=0};
 		graph_add_nodes(&G_compr, G.n);
+		/* Silly trick: dummy edge 0 to allow use of calloc */
+		graph_add_edge(&G_compr, t, s, 0);
 		/* build new graph */
 		for (int e=0; e<G.m; ++e) {
 			int x = G.E[e].x;
@@ -73,15 +72,15 @@ int main(int argc, char *argv[])
 		/* Now, unpack again */
 		f = calloc(G.m, sizeof(long));
 		for (int e=0; e<G.m; ++e) {
-			int x = G_compr.E[e].x;
-			int y = G_compr.E[e].y;
+			int x = G.E[e].x;
+			int y = G.E[e].y;
 			/* set to 0 if weight == 0 */
 			if (edges[x][y] != 0) {
-				if (G_compr.E[edges[x][y]].weight > G.E[e].weight) {
+				if (f_compr[edges[x][y]] > G.E[e].weight) {
 					f[e] = G.E[e].weight;
-					G_compr.E[edges[x][y]].weight -= f[e];
+					f_compr[edges[x][y]] -= f[e]; /* > 0 */
 				} else {
-					f[e] = G_compr.E[edges[x][y]].weight;
+					f[e] = f_compr[edges[x][y]];
 					edges[x][y] = 0;
 				}
 			}

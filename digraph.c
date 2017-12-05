@@ -146,17 +146,9 @@ void graph_print(struct graph *G)
 #else
 void graph_print(struct graph *G)
 {
-	setvbuf(stdout, NULL, _IOFBF, 0);
-	printf("n = %d, m = %d\n", G->n, G->m);
-
-	if (G->m == 0) {
-		printf("There are no edges.\n");
-	} else {
-		printf("Edges:\n");
-		for (int e=0; e<G->m; ++e) {
-			printf("(%d, %d) weight %ld\n", G->E[e].x, G->E[e].y, G->E[e].weight);
-		}
-	}
+	printf("%d\n", G->n);
+	for (int e=0; e<G->m; ++e)
+		printf("%d %d %ld\n", G->E[e].x, G->E[e].y, G->E[e].weight);
 }
 #endif
 
