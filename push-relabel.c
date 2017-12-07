@@ -82,6 +82,7 @@ static inline void relabel(int v, struct graph *G, long *f, struct list *L, stru
 	/* By choice of v, v is last in L[phi[v]] for the old phi */
 	L[phi[v]].len--;
 
+	/* phind new phi */
 	phi[v] = INT_MAX;
 	int e;
 	/* find minimum phi among neighbours in G_f */
@@ -98,8 +99,9 @@ static inline void relabel(int v, struct graph *G, long *f, struct list *L, stru
 			phi[v] = phi[G->E[e].x] + 1;
 	}
 
-	/* Possibly update phi_max, add v to new different L */
-	if (phi[v] > *phi_max)	*phi_max = phi[v];
+	/* Update phi_max, add v to new different L */
+	/* Note: v was chosen with max. phi, and phi was just increased */
+	*phi_max = phi[v];
 	append_to_list(L+phi[v], v);
 
 	/* Now check how many edges are newly allowed */
@@ -128,13 +130,10 @@ static inline void push(int v, int e, struct graph *G, int t, long *f, long *ex,
 	} else {	/* v is deactivated */
 		delta = ex[v];
 		ex[v] = 0;
-		L[*phi_max].len--;	/* by choice of v, phi(v) = phi_max */
+		L[*phi_max].len--;	/* by choice of v, phi(v) = phi_max and v is last in array */
 	}
 
-	/* Have a look if e is still allowed
-	 * If e is saturated, it's not allowed anymore
-	 * If it isn't, it's still allowed
-	 */
+	/* e not allowed anymore if saturated */
 	if (delta == G->E[e].weight) {
 		A[v].len--;
 	}
@@ -148,11 +147,13 @@ static inline void push(int v, int e, struct graph *G, int t, long *f, long *ex,
 		f[e] -= delta;
 		w = G->E[e].x;
 	}
-	if (phi[w] > *phi_max) *phi_max = phi[w];
 
-	/* w is now definitely active. Add to L if newly active */
-	if (ex[w]==0 && w != t)
+	/* Add w to L if newly active */
+	if (ex[w]==0 && w != t) {
 		append_to_list(L+phi[w], w);
+		/* check if phi(w) is new maximum */
+		if (phi[w] > *phi_max) *phi_max = phi[w];
+	}
 	ex[w] += delta;
 }
 
