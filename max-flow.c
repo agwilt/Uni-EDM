@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 
 		/* compute flow in simple graph, output val */
 		long *f_compr = digraph_max_flow(&G_compr, s, t);
-		printf("%ld\n", digraph_flow_val(&G_compr, s, f_compr));
+//		printf("%ld\n", digraph_flow_val(&G_compr, s, f_compr));
 
 		/* Now, unpack again */
 		f = calloc(G.m, sizeof(long));
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 
 	} else {
 		f = digraph_max_flow(&G, s, t);
-		printf("%ld\n", digraph_flow_val(&G, s, f));
+//		printf("%ld\n", digraph_flow_val(&G, s, f));
 	}
 
 	setvbuf(stdout, NULL, _IOFBF, 0);

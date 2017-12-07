@@ -73,6 +73,8 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 	free_lists(L, 2*G->n);
 	free_lists(A, G->n);
 
+	printf("%ld\n", ex[t]);
+
 	return f;
 }
 
