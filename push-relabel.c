@@ -14,8 +14,6 @@ static inline void push(int v, int e, struct graph *G, int t, long *f, long *ex,
 static int get_max_active_node(struct list *L, int *max, long *ex);
 static int get_allowed_edge(struct list *A, int v, int *phi, struct graph *G, long *f);
 
-static void check_flow(struct graph *G, long *f, long *ex);
-
 long *digraph_max_flow(struct graph *G, int s, int t)
 {
 	/*
@@ -41,9 +39,6 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 		ex[G->E[G->V[s].to[i]].y] += f[G->V[s].to[i]];
 		ex[s] -= f[G->V[s].to[i]];
 	}
-	printf("Initial flow-checking:\n");
-	check_flow(G, f, ex);
-	// set lists L[i] of possible active vertices with phi(v) = i
 	// At first: active vertices are exactly s's neighbours
 	struct list *L = calloc(2*G->n, sizeof(struct list));
 	if (G->V[s].d_plus > 0) {
@@ -68,22 +63,20 @@ long *digraph_max_flow(struct graph *G, int s, int t)
 			push(v, e, G, t, f, ex, L, A, phi, &phi_max);
 		else
 			relabel(v, G, f, L, A, phi, &phi_max);
-//		check_flow(G, f, ex);
 	}
+
+	printf("%ld\n", ex[t]);
 
 	free(phi);
 	free(ex);
 	free_lists(L, 2*G->n);
 	free_lists(A, G->n);
 
-	printf("%ld\n", ex[t]);
-
 	return f;
 }
 
 static inline void relabel(int v, struct graph *G, long *f, struct list *L, struct list *A, int *phi, int *phi_max)
 {
-	printf("relabel vertex %d!\n", v);
 	/* First, remove v from L since phi is definitely going to increase */
 	/* By choice of v, v is last in L[phi[v]] for the old phi */
 	L[phi[v]].len--;
@@ -126,29 +119,14 @@ static inline void relabel(int v, struct graph *G, long *f, struct list *L, stru
 
 static inline void push(int v, int e, struct graph *G, int t, long *f, long *ex, struct list *L, struct list *A, int *phi, int *phi_max)
 {
-	printf("push edge %d=(%d,%d) from %d!\n", e, G->E[e].x, G->E[e].y, v);
-	if (f[e] < 0) printf("Warning: started with negative flow on %d.\n", e);
-	if (f[e] > G->E[e].weight) printf("Warning: started with bad flow on %d.\n", e);
 	/* find delta to augment by */
 	long delta;
 	int w;	/* the other vertex */
 
-	/* Set ex */
-#if 0
-	if (ex[v] > G->E[e].weight) {
-		delta = G->E[e].weight;
-		ex[v] -= delta;		/* still >0 */
-	} else {	/* v is deactivated */
-		delta = ex[v];
-		ex[v] = 0;
-		L[*phi_max].len--;	/* by choice of v, phi(v) = phi_max and v is last in array */
-	}
-#endif
-
 	/* Set flow */
 	if (v == G->E[e].x) {	/* edge in G */
-		if (ex[v] > G->E[e].weight) {
-			delta = G->E[e].weight;
+		if (ex[v] > G->E[e].weight - f[e]) {
+			delta = G->E[e].weight - f[e];
 			ex[v] -= delta;
 		} else {
 			delta = ex[v];
@@ -184,9 +162,6 @@ static inline void push(int v, int e, struct graph *G, int t, long *f, long *ex,
 		if (phi[w] > *phi_max) *phi_max = phi[w];
 	}
 	ex[w] += delta;
-
-	if (f[e] < 0) printf("Warning: finished with negative flow on %d.\n", e);
-	if (f[e] > G->E[e].weight) printf("Warning: finished with bad flow on %d.\n", e);
 }
 
 long digraph_flow_val(struct graph *G, int s, long *f)
@@ -234,22 +209,4 @@ static int get_allowed_edge(struct list *A, int v, int *phi, struct graph *G, lo
 			A[v].len--;
 	}
 	return -1;
-}
-
-static void check_flow(struct graph *G, long *f, long *given_ex)
-{
-	long *ex = calloc(G->n, sizeof(long));
-
-	for (int e=0; e<G->m; ++e) {
-		ex[G->E[e].x] -= f[e];
-		ex[G->E[e].y] += f[e];
-		if (f[e] < 0) printf("Error: f(%d) = %ld.\n", e, f[e]);
-		else if (f[e] > G->E[e].weight) printf("Error: f(%d) = %ld > u(%d) = %ld.\n", e, f[e], e, G->E[e].weight);
-	}
-	printf("Überschuss: {%ld", ex[0]);
-	for (int i=1; i<G->n; ++i) printf(", %ld", ex[i]);
-	printf("}\n");
-	for (int i=1; i<G->n; ++i) {
-		if (given_ex[i] != ex[i]) printf("Error: push-relabel thinks ex[%d] = %ld.\n", i, given_ex[i]);
-	}
 }
