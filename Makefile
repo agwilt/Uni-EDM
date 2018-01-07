@@ -1,6 +1,6 @@
 CC = gcc
-#CFLAGS = -Wall -Wextra -Ofast -pedantic -std=c11
-CFLAGS = -Wall -Wextra -g -O0 -pedantic -std=c11
+CFLAGS = -Wall -Wextra -Ofast -pedantic -std=c11
+#CFLAGS = -Wall -Wextra -g -O0 -pedantic -std=c11
 DEPS = $(BIN) $(BUILD) Makefile
 
 BIN = bin
