@@ -16,3 +16,4 @@
  * bfs.c: find shortest path in indirected graph with BFS
  * menger.c: find edge-disjoint s-t-paths
  * max-flow.c: find maximal s-t-flow in directed graph
+ * assignment.c: Solve the assignment problem in a complete bipartite graph
