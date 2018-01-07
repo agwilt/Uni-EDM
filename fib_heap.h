@@ -3,8 +3,6 @@
 #ifndef FIB_HEAP_H
 #define FIB_HEAP_H
 
-#include "graph.h"
-
 #include "config.h"
 
 /* DATA STRUCTURES

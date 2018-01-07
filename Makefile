@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Ofast -pedantic -std=c11
-#CFLAGS = -Wall -Wextra -g -O0 -pedantic -std=c11
+#CFLAGS = -Wall -Wextra -Ofast -pedantic -std=c11
+CFLAGS = -Wall -Wextra -g -O0 -pedantic -std=c11
 DEPS = $(BIN) $(BUILD) Makefile
 
 BIN = bin
@@ -8,6 +8,9 @@ BUILD = obj
 
 $(BUILD)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
+
+assignment: $(BUILD)/assignment.o $(BUILD)/digraph.o $(BUILD)/fib_heap.o $(DEPS)
+	$(CC) $(CFLAGS) $(BUILD)/assignment.o $(BUILD)/digraph.o $(BUILD)/fib_heap.o -o $(BIN)/assignment
 
 max-flow: $(BUILD)/max-flow.o $(BUILD)/digraph.o $(BUILD)/push-relabel.o $(BUILD)/int_list.o $(DEPS)
 	$(CC) $(CFLAGS) $(BUILD)/max-flow.o $(BUILD)/digraph.o $(BUILD)/push-relabel.o $(BUILD)/int_list.o -o $(BIN)/max-flow
