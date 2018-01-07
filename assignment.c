@@ -107,7 +107,7 @@ int dijkstra(struct graph *G, int *pi, char *f, char *ex, int x, int *prev)
 {
 //	printf("dijkstra(G, pi=%p, f=%p, ex=%p, x=%d, prev=%p)\n", (void*) pi, (void*) f, (void*) ex, x, (void*) prev);
 	char *visited = calloc(G->n, sizeof(char));
-	struct fib_node **node = malloc(G->n * sizeof(struct fib_node *));
+	struct fib_node **node = calloc(G->n, sizeof(struct fib_node *));
 	struct fib_heap heap = {.n=0, .b=NULL};
 
 	int *old_pi = malloc(G->n * sizeof(int));
@@ -120,14 +120,16 @@ int dijkstra(struct graph *G, int *pi, char *f, char *ex, int x, int *prev)
 	struct fib_node *node_addr;
 	while ((node_addr = fib_heap_extract_min(&heap)) != 0) {
 		int v = ((struct vert*) node_addr->val)->id;
-		free(node_addr);
 //		printf("Dijkstra Iteration, starting from v=%d!\n", v);
 		/* return if valid y found */
 		if (ex[v] == 0 && v >= G->n/2) {
 			free(visited);
-			free(node);
 			free(old_pi);
-			fib_heap_free(&heap);
+			if (heap.b) free(heap.b);
+			for (int i=0; i<G->n; ++i) {
+				if (node[i]) free(node[i]);
+			}
+			free(node);
 			return v;
 		}
 		/* look at neighbours */
