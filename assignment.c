@@ -8,10 +8,10 @@
 #include "fib_heap.h"
 
 /* return cost if a solution exists */
-long successive_shortest_paths(struct graph *G, long *pi, char *f);
+long successive_shortest_paths(struct graph *G, long *pi, char *f, int *ex);
 
 /* dijkstra from x, stop at first valid y and return it */
-int dijkstra(struct graph *G, long *pi, char *f, char *ex, int x, int *prev);
+int dijkstra(struct graph *G, long *pi, char *f, int *ex, int x, int *prev);
 
 int main(int argc, char *argv[])
 {
@@ -30,12 +30,19 @@ int main(int argc, char *argv[])
 	}
 	*/
 
+	/* Set initial f */
+	char *f = calloc(G.m, sizeof(char));
+	int *ex = calloc(G.n, sizeof(int));
+	for (int e=0; e<G.m; ++e) {
+		if (G.E[e].weight < 0) {
+			f[e] = 1;
+			ex[G.E[e].x]--;
+			ex[G.E[e].y]++;
+		}
+	}
+
 	/* generate initial zul. pot */
 	long *pi = calloc(G.n, sizeof(long));
-	for (int e=0; e<G.m; ++e)
-		if (G.E[e].weight < pi[G.E[e].y])
-			pi[G.E[e].y] = G.E[e].weight;
-	char *f = calloc(G.m, sizeof(char));
 
 #ifdef DEBUG
 	if (G.n < 100) {
@@ -45,7 +52,7 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	long cost = successive_shortest_paths(&G, pi, f);
+	long cost = successive_shortest_paths(&G, pi, f, ex);
 
 	/* output */
 	printf("%ld\n", cost);
@@ -65,22 +72,24 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-long successive_shortest_paths(struct graph *G, long *pi, char *f)
+long successive_shortest_paths(struct graph *G, long *pi, char *f, int *ex)
 {
 #ifdef DEBUG
 	printf("successive_shortest_paths(G, pi=%p, f=%p)\n", (void*) pi, (void*) f);
 #endif
 	int val = 0;
 	int *prev = malloc(G->m * sizeof(int)); // tree for dijkstra, saves edges
-	char *ex = calloc(G->n, sizeof(char));
-	while (val < G->n/2) {
+	while (true) {
 		/* find x, y */
 		int x;
-		for (x = 0; x<G->n/2; ++x) {
-			if (ex[x] == 0) break;
-		}
+		for (x = 0; x<G->n/2; ++x)
+			if (ex[x] >= 0) break;
 		if (x == G->n/2) {
-			err(1, "Error: Graph is broken.\n");
+			for (x = G->n/2; x<G->n; ++x) {
+				if (ex[x] >= 2) break;
+			}
+			if (x == G->n)
+				break;
 		}
 		int y = dijkstra(G, pi, f, ex, x, prev);
 
@@ -91,14 +100,10 @@ long successive_shortest_paths(struct graph *G, long *pi, char *f)
 		for (int v=y; v!=x;) {
 			int e = prev[v];
 			if (f[e] == 0) {
-				printf("v = %d, e = (%d,%d), f[e] = %d\n", v, G->E[e].x, G->E[e].y, f[e]);
 				f[e] = 1;
-				if (v == G->E[e].x) printf("Wah!\n");
 				v = G->E[e].x;
 			} else {
-				printf("v = %d, e = (%d,%d), f[e] = %d\n", v, G->E[e].x, G->E[e].y, f[e]);
 				f[e] = 0;
-				if (v == G->E[e].y) printf("Wah!\n");
 				v = G->E[e].y;
 			}
 		}
@@ -119,13 +124,14 @@ long successive_shortest_paths(struct graph *G, long *pi, char *f)
 	return cost;
 }
 
-int dijkstra(struct graph *G, long *pi, char *f, char *ex, int x, int *prev)
+int dijkstra(struct graph *G, long *pi, char *f, int *ex, int x, int *prev)
 {
 #ifdef DEBUG
 	printf("dijkstra(G, pi=%p, f=%p, ex=%p, x=%d, prev=%p)\n", (void*) pi, (void*) f, (void*) ex, x, (void*) prev);
 	printf("Reduced costs are:\n");
 #endif
 	char *visited = calloc(G->n, sizeof(char));
+	char *main_visited = calloc(G->n, sizeof(char));
 	struct fib_node **node = calloc(G->n, sizeof(struct fib_node *));
 	struct fib_heap heap = {.n=0, .b=NULL};
 
@@ -135,20 +141,22 @@ int dijkstra(struct graph *G, long *pi, char *f, char *ex, int x, int *prev)
 	struct fib_node *node_addr;
 	while ((node_addr = fib_heap_extract_min(&heap)) != 0) {
 		int v = ((struct vert*) node_addr->val)->id;
+		main_visited[v] = true;
 #ifdef DEBUG
 		printf("Dijkstra Iteration, starting from v=%d!\n", v);
 #endif
 		/* return if valid y found */
-		if (ex[v] == 0 && v >= G->n/2) {
+		if ((v<G->n/2 && ex[v]<=-2) || (v>=G->n/2 && ex[v]<=0)) {
 			/* set new pi */
 			for (int i=0; i<G->n; ++i) {
-				if (visited[i])
+				if (main_visited[i])
 					pi[i] += node[i]->key;
 				else
 					pi[i] += node[v]->key;
 			}
 
 			free(visited);
+			free(main_visited);
 			if (heap.b) free(heap.b);
 			for (int i=0; i<G->n; ++i) {
 				if (node[i]) free(node[i]);
