@@ -44,14 +44,6 @@ int main(int argc, char *argv[])
 	/* generate initial zul. pot */
 	long *pi = calloc(G.n, sizeof(long));
 
-#ifdef DEBUG
-	if (G.n < 100) {
-		graph_print(&G);
-	} else {
-		printf("n = %d, m = %d\n", G.n, G.m);
-	}
-#endif
-
 	long cost = successive_shortest_paths(&G, pi, f, ex);
 
 	/* output */
@@ -74,9 +66,6 @@ int main(int argc, char *argv[])
 
 long successive_shortest_paths(struct graph *G, long *pi, char *f, int *ex)
 {
-#ifdef DEBUG
-	printf("successive_shortest_paths(G, pi=%p, f=%p)\n", (void*) pi, (void*) f);
-#endif
 	int val = 0;
 	int *prev = malloc(G->m * sizeof(int)); // tree for dijkstra, saves edges
 	while (true) {
@@ -93,9 +82,6 @@ long successive_shortest_paths(struct graph *G, long *pi, char *f, int *ex)
 		}
 		int y = dijkstra(G, pi, f, ex, x, prev);
 
-#ifdef DEBUG
-		printf("Will now augment from %d to %d\n", x, y);
-#endif
 		/* augment along x-y-path */
 		for (int v=y; v!=x;) {
 			int e = prev[v];
@@ -126,10 +112,6 @@ long successive_shortest_paths(struct graph *G, long *pi, char *f, int *ex)
 
 int dijkstra(struct graph *G, long *pi, char *f, int *ex, int x, int *prev)
 {
-#ifdef DEBUG
-	printf("dijkstra(G, pi=%p, f=%p, ex=%p, x=%d, prev=%p)\n", (void*) pi, (void*) f, (void*) ex, x, (void*) prev);
-	printf("Reduced costs are:\n");
-#endif
 	char *visited = calloc(G->n, sizeof(char));
 	char *main_visited = calloc(G->n, sizeof(char));
 	struct fib_node **node = calloc(G->n, sizeof(struct fib_node *));
@@ -142,9 +124,6 @@ int dijkstra(struct graph *G, long *pi, char *f, int *ex, int x, int *prev)
 	while ((node_addr = fib_heap_extract_min(&heap)) != 0) {
 		int v = ((struct vert*) node_addr->val)->id;
 		main_visited[v] = true;
-#ifdef DEBUG
-		printf("Dijkstra Iteration, starting from v=%d!\n", v);
-#endif
 		/* return if valid y found */
 		if ((v<G->n/2 && ex[v]<=-2) || (v>=G->n/2 && ex[v]<=0)) {
 			/* set new pi */
@@ -167,28 +146,16 @@ int dijkstra(struct graph *G, long *pi, char *f, int *ex, int x, int *prev)
 		}
 
 		/* look at neighbours */
-#ifdef DEBUG
-		printf("\tnow scanning neighbours ...\n");
-#endif
 		for (int i=0; i<G->V[v].d_plus; ++i) {
 			int e = G->V[v].to[i];
-#ifdef DEBUG
-			printf("\tLooking forward at e=%d\n", e);
-#endif
 			if (f[e] == 0) {
 				int w = G->E[e].y;
 				if (G->E[e].weight + pi[v] - pi[w] < 0) err(1, "ERROR: Reduced costs in G c_pi((%d,%d))=%ld\n", v, w, G->E[e].weight + pi[v] - pi[w]);
 				if (! visited[w]) {
-#ifdef DEBUG
-					printf("\t\tfound new neighbour %d from %d in G\n", w, v);
-#endif
 					visited[w] = true;
 					node[w] = fib_heap_insert(&heap, G->V+w, node_addr->key + G->E[e].weight + pi[v] - pi[w]);
 					prev[w] = e;
 				} else if (node[w]->key > node_addr->key + G->E[e].weight + pi[v] - pi[w]) {
-#ifdef DEBUG
-					printf("\t\tupdated edge (%d,%d) in G\n", v, w);
-#endif
 					fib_heap_decrease_key(&heap, node[w], node_addr->key + G->E[e].weight + pi[v] - pi[w]);
 					prev[w] = e;
 				}
@@ -196,23 +163,14 @@ int dijkstra(struct graph *G, long *pi, char *f, int *ex, int x, int *prev)
 		}
 		for (int i=0; i<G->V[v].d_minus; ++i) {
 			int e = G->V[v].from[i];
-#ifdef DEBUG
-			printf("\tLooking back at e=%d\n", e);
-#endif
 			if (f[e] == 1) {
 				int w = G->E[e].x;
 				if (-G->E[e].weight + pi[v] - pi[w] < 0) err(1, "ERROR: Reduced costs in G_back c_pi((%d,%d))=%ld\n", v, w, -G->E[e].weight + pi[v] - pi[w]);
 				if (! visited[w]) {
-#ifdef DEBUG
-					printf("\t\tfound new neighbour %d from %d in G_f\n", w, v);
-#endif
 					visited[w] = true;
 					node[w] = fib_heap_insert(&heap, G->V+w, node_addr->key - G->E[e].weight + pi[v] - pi[w]);
 					prev[w] = e;
 				} else if (node[w]->key > node_addr->key - G->E[e].weight + pi[v] - pi[w]) {
-#ifdef DEBUG
-					printf("\t\tupdated edge (%d,%d) in G_f\n", v, w);
-#endif
 					fib_heap_decrease_key(&heap, node[w], node_addr->key - G->E[e].weight + pi[v] - pi[w]);
 					prev[w] = e;
 				}
