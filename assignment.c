@@ -150,7 +150,6 @@ int dijkstra(struct graph *G, long *pi, char *f, int *ex, int x, int *prev)
 			int e = G->V[v].to[i];
 			if (f[e] == 0) {
 				int w = G->E[e].y;
-				if (G->E[e].weight + pi[v] - pi[w] < 0) err(1, "ERROR: Reduced costs in G c_pi((%d,%d))=%ld\n", v, w, G->E[e].weight + pi[v] - pi[w]);
 				if (! visited[w]) {
 					visited[w] = true;
 					node[w] = fib_heap_insert(&heap, G->V+w, node_addr->key + G->E[e].weight + pi[v] - pi[w]);
@@ -165,7 +164,6 @@ int dijkstra(struct graph *G, long *pi, char *f, int *ex, int x, int *prev)
 			int e = G->V[v].from[i];
 			if (f[e] == 1) {
 				int w = G->E[e].x;
-				if (-G->E[e].weight + pi[v] - pi[w] < 0) err(1, "ERROR: Reduced costs in G_back c_pi((%d,%d))=%ld\n", v, w, -G->E[e].weight + pi[v] - pi[w]);
 				if (! visited[w]) {
 					visited[w] = true;
 					node[w] = fib_heap_insert(&heap, G->V+w, node_addr->key - G->E[e].weight + pi[v] - pi[w]);
