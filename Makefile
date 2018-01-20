@@ -9,6 +9,9 @@ BUILD = obj
 $(BUILD)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
+turing: $(BUILD)/turing.o $(DEPS)
+	$(CC) $(CFLAGS) $(BUILD)/turing.o -o $(BIN)/turing
+
 assignment: $(BUILD)/assignment.o $(BUILD)/digraph.o $(BUILD)/fib_heap.o $(DEPS)
 	$(CC) $(CFLAGS) $(BUILD)/assignment.o $(BUILD)/digraph.o $(BUILD)/fib_heap.o -o $(BIN)/assignment
 
