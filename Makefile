@@ -9,6 +9,8 @@ BUILD = obj
 $(BUILD)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
+all: turing assignment max-flow check-flow menger bfs mst Eulerweg heapsort heap_test
+
 turing: $(BUILD)/turing.o $(DEPS)
 	$(CC) $(CFLAGS) $(BUILD)/turing.o -o $(BIN)/turing
 
